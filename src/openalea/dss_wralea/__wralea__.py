@@ -1,5 +1,5 @@
 
-# This file has been generated at Thu Sep 10 17:25:04 2020
+# This file has been generated at Thu Sep 10 17:46:51 2020
 
 from openalea.core import *
 
@@ -17,25 +17,21 @@ __institutes__ = None
 __icon__ = ''
 
 
-__all__ = ['_155408760', '_155903088', '_155408704', 'openalea_dss_mini_models_contamination_risk']
+__all__ = ['_153811264', '_153811376', '_153811320', 'openalea_dss_mini_models_contamination_risk']
 
 
 
-_155408760 = CompositeNodeFactory(name='dss_demo',
+_153811264 = CompositeNodeFactory(name='dss_demo',
                              description='A simple dss model',
                              category='model',
                              doc='',
                              inputs=[],
                              outputs=[],
                              elt_factory={  4: ('dss', 'meteo00-01.txt'),
-   6: ('openalea.data structure', 'int'),
    8: ('dss', 'dss_model'),
    9: ('openalea.data structure.string', 'string'),
    10: ('openalea.data structure.string', 'string')},
-                             elt_connections={  43018168L: (10, 0, 8, 2),
-   43018192L: (4, 0, 8, 0),
-   43018216L: (9, 0, 8, 1),
-   43018240L: (8, 0, 6, 0)},
+                             elt_connections={  7563216L: (9, 0, 8, 1), 7563240L: (4, 0, 8, 0), 7563264L: (10, 0, 8, 2)},
                              elt_data={  4: {  'block': False,
          'caption': 'meteo00-01.txt',
          'delay': 0,
@@ -49,19 +45,6 @@ _155408760 = CompositeNodeFactory(name='dss_demo',
          'use_user_color': False,
          'user_application': None,
          'user_color': None},
-   6: {  'block': False,
-         'caption': '46',
-         'delay': 0,
-         'hide': True,
-         'id': 6,
-         'lazy': True,
-         'port_hide_changed': set([]),
-         'posx': -32.81836169556553,
-         'posy': 52.01400721561329,
-         'priority': 0,
-         'use_user_color': False,
-         'user_application': None,
-         'user_color': None},
    8: {  'block': False,
          'caption': 'dss_model',
          'delay': 0,
@@ -70,13 +53,13 @@ _155408760 = CompositeNodeFactory(name='dss_demo',
          'lazy': True,
          'port_hide_changed': set([]),
          'posx': -54.34433681110781,
-         'posy': -6.84653062187185,
+         'posy': -7.193332009581045,
          'priority': 0,
          'use_user_color': False,
          'user_application': None,
          'user_color': None},
    9: {  'block': False,
-         'caption': '2000-10-01\n',
+         'caption': '2000-10-01',
          'delay': 0,
          'hide': True,
          'id': 9,
@@ -128,7 +111,6 @@ _155408760 = CompositeNodeFactory(name='dss_demo',
                  'user_application': None,
                  'user_color': None}},
                              elt_value={  4: [(0, 'PackageData(dss, meteo00-01.txt)'), (1, 'None'), (2, 'None')],
-   6: [],
    8: [],
    9: [(0, "u'2000-10-01'")],
    10: [(0, "u'2000-10-05'")],
@@ -144,11 +126,13 @@ _155408760 = CompositeNodeFactory(name='dss_demo',
    5: {  'position': [13.439720699098924, -32.714085504893184],
          'useUserColor': False,
          'userColor': None},
-   6: {'position': [-32.81836169556553, 52.01400721561329], 'userColor': None, 'useUserColor': False},
+   6: {  'position': [-32.81836169556553, 52.01400721561329],
+         'useUserColor': False,
+         'userColor': None},
    7: {  'position': [50.352251043631924, -74.941090915003],
          'useUserColor': False,
          'userColor': None},
-   8: {'position': [-54.34433681110781, -6.84653062187185], 'userColor': None, 'useUserColor': False},
+   8: {'position': [-54.34433681110781, -7.193332009581045], 'userColor': None, 'useUserColor': False},
    9: {'position': [-60.43157097091089, -80.16782974290722], 'userColor': None, 'useUserColor': False},
    10: {'position': [12.147076016133681, -69.28434370179895], 'userColor': None, 'useUserColor': False},
    '__in__': {'position': [0, 0], 'userColor': None, 'useUserColor': True},
@@ -159,15 +143,8 @@ _155408760 = CompositeNodeFactory(name='dss_demo',
 
 
 
-_155903088 = DataFactory(name='meteo00-01.txt',
-                    description='a sample meteo data',
-                    editors=None,
-                    includes=None,
-                    )
 
-
-
-_155408704 = CompositeNodeFactory(name='dss_model',
+_153811376 = CompositeNodeFactory(name='dss_model',
                              description='',
                              category='Unclassified',
                              doc='',
@@ -265,15 +242,32 @@ _155408704 = CompositeNodeFactory(name='dss_model',
    5: [(2, 'None'), (3, "'H'"), (4, "u'utc'"), (5, 'False'), (6, "u'None'")],
    '__in__': [],
    '__out__': []},
-                             elt_ad_hoc={  2: {'position': [-104.40801838886425, 38.928395608932334], 'userColor': None, 'useUserColor': False},
-   3: {'position': [-86.57437461614231, -7.649391334127948], 'userColor': None, 'useUserColor': False},
-   5: {'position': [-25.036690575205313, -7.419969201258212], 'userColor': None, 'useUserColor': False},
-   '__in__': {'position': [-37.460744542251625, -66.83355273684631], 'userColor': None, 'useUserColor': False},
-   '__out__': {'position': [-68.66299552665876, 84.84569120627239], 'userColor': None, 'useUserColor': False}},
+                             elt_ad_hoc={  2: {  'position': [-104.40801838886425, 38.928395608932334],
+         'useUserColor': False,
+         'userColor': None},
+   3: {  'position': [-86.57437461614231, -7.649391334127948],
+         'useUserColor': False,
+         'userColor': None},
+   5: {  'position': [-25.036690575205313, -7.419969201258212],
+         'useUserColor': False,
+         'userColor': None},
+   '__in__': {  'position': [-37.460744542251625, -66.83355273684631],
+                'useUserColor': False,
+                'userColor': None},
+   '__out__': {  'position': [-68.66299552665876, 84.84569120627239],
+                 'useUserColor': False,
+                 'userColor': None}},
                              lazy=True,
                              eval_algo='LambdaEvaluation',
                              )
 
+
+
+_153811320 = DataFactory(name='meteo00-01.txt',
+                    description='a sample meteo data',
+                    editors=None,
+                    includes=None,
+                    )
 
 
 
