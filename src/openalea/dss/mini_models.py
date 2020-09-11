@@ -46,8 +46,8 @@ def contamination_risk(weather, time_sequence):
     rain = weather.get_variable('rain', time_sequence)
     relative_humidity = weather.get_variable('relative_humidity', time_sequence)
     ppfd = weather.get_variable('PPFD', time_sequence)
-    index = sum(map(lambda(x): leaf_wetness_rapilly(*x), zip(rain, relative_humidity, ppfd)))
-    return index
+    index = map(lambda(x): leaf_wetness_rapilly(*x), zip(rain, relative_humidity, ppfd))
+    return list(index)
     
 
 def leaf_wetness_pedro_gillepsie(leaf_geometry=None, rain_intensity=0., temperature_air=0., 
