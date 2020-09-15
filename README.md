@@ -3,7 +3,7 @@
 **Authors:** Marc LABADIE, Christophe Pradal, Christian Fournier, Corrine Robert   
 **Mainteners:**   
 **Institutes** : INRA, CIRAD  
-**Licence:** [CeCILL-C](/DSS/LICENSE.txt)  
+**Licence:** [CeCILL-C](https://raw.githubusercontent.com/H2020-IPM-openalea/DSS/master/LICENSE.txt)  
 **Status:** Python package
 
 ## About
