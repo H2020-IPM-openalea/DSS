@@ -62,7 +62,7 @@ def model_metainfo(factory,name):
                 "endpoints": NotImplemented,
                 "form_method": NotImplemented,
                 "content_type": NotImplemented,
-                "input_schema": factory[name].get_writer()}
+                "input_schema": NotImplemented} #factory[name].get_writer()}
     inputs = factory[name].inputs
     authors = {"name":factory[name].get_authors(),
             "email": NotImplemented,
@@ -122,7 +122,7 @@ def json_write(obj, filename):
     Parameters:
     -----------
         obj: OrderedDict issue from DSS and/or DSSModel function
-        filname: name of json file (filename must be finish by extension .json)
+        filname: (string) name of json file (filename must be finish by extension .json)
 
     '''
     with open(filename, 'w') as f:
