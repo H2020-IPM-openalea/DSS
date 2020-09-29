@@ -22,20 +22,20 @@ def package_metainfo(factory):
     -----------
         factory: package name
     """
-    identifier = NotImplemented
+    identifier = ""
     name = factory.name
     description = factory.metainfo['description'] # optional no ask by ipm
     version = factory.metainfo['version']
     Authors = factory.metainfo['authors']
     url = factory.metainfo['url']
-    languages = NotImplemented
+    languages = ""
     organization = {"name" : factory.metainfo["institutes"], 
-                    "country" : NotImplemented, 
-                    "address" : NotImplemented, 
-                    "postal_code" : NotImplemented, 
-                    "city" : NotImplemented, 
-                    "email" : NotImplemented, 
-                    "url" : NotImplemented}
+                    "country" : "", 
+                    "address" : "", 
+                    "postal_code" : "", 
+                    "city" : "", 
+                    "email" : "", 
+                    "url" : ""}
     license = factory.metainfo['license'] # optional no ask by ipm
 
     return OrderedDict(identifier = identifier,
@@ -51,31 +51,31 @@ def package_metainfo(factory):
 def model_metainfo(factory,name):
     """Transform a factory into an OrderedDict"""
     name = factory[name].name
-    identifier = NotImplemented 
-    version = NotImplemented
-    type_of_decision = NotImplemented
-    type_of_output = NotImplemented
-    description_URL = NotImplemented
+    identifier = "" 
+    version = ""
+    type_of_decision = ""
+    type_of_output = ""
+    description_URL = ""
     description = factory[name].description
-    citation = NotImplemented
-    execution = {"type": NotImplemented,
-                "endpoints": NotImplemented,
-                "form_method": NotImplemented,
-                "content_type": NotImplemented,
-                "input_schema": NotImplemented} #factory[name].get_writer()}
+    citation = ""
+    execution = {"type": "",
+                "endpoints": "",
+                "form_method": "",
+                "content_type": "",
+                "input_schema": ""} #factory[name].get_writer()}
     inputs = factory[name].inputs
     authors = {"name":factory[name].get_authors(),
-            "email": NotImplemented,
+            "email": "",
             "organization":factory.metainfo["institutes"]}
-    pests = NotImplemented
-    crops = NotImplemented
-    keywords = NotImplemented
-    output = {"warning_status_interpretation": NotImplemented,
-            "result_parameters": {"id": NotImplemented , 
+    pests = ""
+    crops = ""
+    keywords = ""
+    output = {"warning_status_interpretation": "",
+            "result_parameters": {"id": "" , 
                                 "title": factory[name].outputs[0]['name'],
                                 "description": factory[name].outputs[0]['desc']}}
-    valid_spatial = {"countries": NotImplemented,
-                    "geoJson": NotImplemented}
+    valid_spatial = {"countries": "",
+                    "geoJson": ""}
     
     return OrderedDict(name = name, 
                        identifier = identifier, 
