@@ -20,7 +20,7 @@ class DSSdata(object):
         self.ipm = IPM()
         self.ws = WeatherDataHub()
         
-    def input_model_json(
+    def input_DSS_weather_model_json(
         self,
         timeZone ="UTC",
         TimeStart ="2020-05-01",
@@ -29,7 +29,7 @@ class DSSdata(object):
         parameters=[1002],
         station_id=101104):
         """
-        Create an json input data for model
+        Create an json input weather data for model
         
         Parameter:
         ----------
@@ -42,7 +42,7 @@ class DSSdata(object):
 
         Returns:
         --------
-            input data for the model (json file)
+            input weather data for the model (json file)
         """
         d= {
         "modelId": self.DSSId,
@@ -60,7 +60,48 @@ class DSSdata(object):
             ViewDataFrame=False)
         }
         
-        with open('model_input.json', 'w') as outfile:
+        with open('model_input_weatherdata.json', 'w') as outfile:
+            json.dump(d, outfile)
+
+    def input_DSS_fieldobservation_model_json(
+        self,
+        timeZone ="UTC",
+        TimeStart ="2020-05-01",
+        TimeEnd ="2020-05-03",
+        weatherDataService='Finnish Meteorological Institute measured data',
+        parameters=[1002],
+        station_id=101104):
+        """
+        Create an json input field observation data for model
+        
+        Parameter:
+        ----------
+            timeZone:(txt) Timezone of climatic data (eg:"UTC", Europe/Oslo)
+            TimeStart: (double) start date for meteological data
+            TimeEnd: (double) end date for meteological data
+            weatherDataService:(txt, name of weather data service) Weather data service present in IPM plateform (see:https://ipmdecisions.nibio.no/api/wx/apidocs/)
+            parameters:(list of int) Meteorological parameters code (see:https://ipmdecisions.nibio.no/api/wx/apidocs/)
+            station_id: (int)nid of meterological station. (see:https://ipmdecisions.nibio.no/api/wx/apidocs/)
+
+        Returns:
+        --------
+            input data for the model (json file)
+        """
+
+        d= {
+        "modelId": self.DSSId,
+        "configParameters": {
+            "timeZone": timeZone,
+            "startDateCalculation": TimeStart,
+            "endDateCalculation": TimeEnd}
+        }
+        
+        with open('fieldobservation.json') as json_file:
+            data = json.load(json_file)
+        
+        d['configParameters'].update(data)
+
+        with open('model_input_fieldobservation.json', 'w') as outfile:
             json.dump(d, outfile)
 
     def get_data_model(
