@@ -17,6 +17,17 @@ Repository containing DSS model of openalea for [H2020 IPM-Decision Project](htt
 ### Installation
 
 ### Requierements
+* openalea.deploy
+* agroservices
+* requests (agroservices) 
+* appdirs (agroservices)
+* bs4 (agroservices)
+* colorlog (agroservices)
+* requests_cache (agroservices)
+* weatherdata
+* xarray (weatherdata)
+* pandas
+
 
 ### Documentation
 
