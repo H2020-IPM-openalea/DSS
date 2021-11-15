@@ -27,11 +27,11 @@ class DSSdata(object):
         TimeEnd ="2020-05-03",
         weatherDataService='Finnish Meteorological Institute measured data',
         parameters=[1002],
-        station_id=101104):
+        stationId=[101104]):
         """
         Create an json input weather data for model
         
-        Parameter:
+        Parameters
         ----------
             timeZone:(txt) Timezone of climatic data (eg:"UTC", Europe/Oslo)
             TimeStart: (double) start date for meteological data
@@ -40,7 +40,7 @@ class DSSdata(object):
             parameters:(list of int) Meteorological parameters code (see:https://ipmdecisions.nibio.no/api/wx/apidocs/)
             station_id: (int)nid of meterological station. (see:https://ipmdecisions.nibio.no/api/wx/apidocs/)
 
-        Returns:
+        Returns
         --------
             input weather data for the model (json file)
         """
@@ -51,13 +51,13 @@ class DSSdata(object):
             "timeStart": TimeStart,
             "timeEnd": TimeEnd
         },
-        "weatherData": self.ws.get_ressource(name=weatherDataService).get_data(
+        "weatherData": self.ws.get_ressource(name=weatherDataService).data(
             parameters=parameters,
-            station_id=station_id,
+            stationId=stationId,
             timeStart=TimeStart,
             timeEnd=TimeEnd,
-            timezone=timeZone,
-            ViewDataFrame=False)
+            timeZone=timeZone,
+            format='json')
         }
         
         with open('model_input_weatherdata.json', 'w') as outfile:
@@ -67,23 +67,17 @@ class DSSdata(object):
         self,
         timeZone ="UTC",
         TimeStart ="2020-05-01",
-        TimeEnd ="2020-05-03",
-        weatherDataService='Finnish Meteorological Institute measured data',
-        parameters=[1002],
-        station_id=101104):
+        TimeEnd ="2020-05-03"):
         """
         Create an json input field observation data for model
         
-        Parameter:
+        Parameter
         ----------
             timeZone:(txt) Timezone of climatic data (eg:"UTC", Europe/Oslo)
             TimeStart: (double) start date for meteological data
             TimeEnd: (double) end date for meteological data
-            weatherDataService:(txt, name of weather data service) Weather data service present in IPM plateform (see:https://ipmdecisions.nibio.no/api/wx/apidocs/)
-            parameters:(list of int) Meteorological parameters code (see:https://ipmdecisions.nibio.no/api/wx/apidocs/)
-            station_id: (int)nid of meterological station. (see:https://ipmdecisions.nibio.no/api/wx/apidocs/)
 
-        Returns:
+        Returns
         --------
             input data for the model (json file)
         """
@@ -106,7 +100,7 @@ class DSSdata(object):
 
     def get_data_model(
         self,
-        model_input="model_input.json"):
+        modelInput="model_input.json"):
         """
         Get data of the model
 
@@ -122,7 +116,7 @@ class DSSdata(object):
         rep= self.ipm.run_model(
             ModelId=self.ModelId,
             DSSId=self.DSSId,
-            model_input=model_input)
+            model_input=modelInput)
         
         d = {str(var): vals for var, vals in zip(rep['resultParameters'], zip(*rep['locationResult'][0]['data']))}
         dt=rep['locationResult'][0]['warningStatus']
@@ -143,10 +137,10 @@ class DSSHub(object):
         """
         Get a dict of available DSS on the IPM catalog, modelsid, name, and description
 
-        Parameters:
+        Parameters
         -----------
         
-        Returns:
+        Returns
         --------
             dictionnary or Dataframe with DSSid, ModelId, name ,description and endpoint for each ModelID
         """
@@ -165,12 +159,12 @@ class DSSHub(object):
         """
         Get DSS model
 
-        Parameters:
+        Parameters
         -----------
             ModelID: (str) id of the model (eg:'no.nibio.vips')
             DSSId: (str) id of the dds (eg: PSILARTEMP)
         
-        Returns:
+        Returns
         --------
             DSSdata class of the modelid and dssid
         """
@@ -179,10 +173,11 @@ class DSSHub(object):
         modelid= [el['id'] for el in rep]
         dssid=[[el['models'][item]['id'] for item in range(len(el['models']))]for el in rep]
 
-        if (ModelId in modelid and DSSId in dssid[0]):
+        if (ModelId in modelid and DSSId in dssid[item] for item in range(len(dssid))):
             return DSSdata(ModelId,DSSId)
         else:
             raise NotImplementedError()
+
 
 
 
