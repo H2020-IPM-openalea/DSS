@@ -57,17 +57,20 @@ class DSSdata(object):
             timeStart=TimeStart,
             timeEnd=TimeEnd,
             timeZone=timeZone,
-            format='json')
+            format='json')[0]
         }
         
         with open('model_input_weatherdata.json', 'w') as outfile:
             json.dump(d, outfile)
+            
+        return d
 
     def input_DSS_fieldobservation_model_json(
         self,
         timeZone ="UTC",
         TimeStart ="2020-05-01",
-        TimeEnd ="2020-05-03"):
+        TimeEnd ="2020-05-03",
+        fieldobservation='fieldobservation.json'):
         """
         Create an json input field observation data for model
         
@@ -90,13 +93,14 @@ class DSSdata(object):
             "endDateCalculation": TimeEnd}
         }
         
-        with open('fieldobservation.json') as json_file:
+        with open(fieldobservation) as json_file:
             data = json.load(json_file)
         
         d['configParameters'].update(data)
 
         with open('model_input_fieldobservation.json', 'w') as outfile:
             json.dump(d, outfile)
+        return d
 
     def get_data_model(
         self,
