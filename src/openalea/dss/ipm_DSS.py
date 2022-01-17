@@ -9,6 +9,7 @@
 
 import pandas
 import json
+import xarray as xr
 from agroservices import IPM
 from weatherdata import WeatherDataHub
 
@@ -19,7 +20,10 @@ class DSSdata(object):
         self.DSSId = DSSId
         self.ipm = IPM()
         self.ws = WeatherDataHub()
-        
+    
+    def model_information(self):
+        return self.ipm.get_model(ModelId=self.DSSId, DSSId=self.ModelId)
+       
     def input_DSS_weather_model_json(
         self,
         timeZone ="UTC",
@@ -122,16 +126,41 @@ class DSSdata(object):
             DSSId=self.DSSId,
             model_input=modelInput)
         
-        d = {str(var): vals for var, vals in zip(rep['resultParameters'], zip(*rep['locationResult'][0]['data']))}
-        dt=rep['locationResult'][0]['warningStatus']
+        data = {str(var): vals for var, vals in zip(rep['resultParameters'], zip(*rep['locationResult'][0]['data']))}
+        data['warningStatus']=rep['locationResult'][0]['warningStatus']
         
-        df1=pandas.DataFrame(d)
-        df2= pandas.DataFrame(dt)
-        df2.columns=['warningStatus']
+        times_index= pandas.date_range(start=rep['timeStart'], end=rep['timeEnd'], freq=str(rep['interval'])+"s")
+        df=pandas.DataFrame(data, index=times_index.values)
+        
+        # convert dataframe to xarray dataset
+        ds = xr.Dataset.from_dataframe(df)
+        ds = ds.rename({'index':'time'})
+        
+       
+        # index attributs
+        ds.time.attrs["name"]="time"
+        ds.time.attrs["units"]="days"
+        
+        #variable attributs
+        source = self.model_information()
+        
+        data_vars_attrs={el['id']:{key:el[key] for key in ['title','description']} for el in source['output']['result_parameters']}
+        
+        for el in list(ds.data_vars):
+            if el in list(data_vars_attrs):
+                ds.data_vars[el].attrs=data_vars_attrs[el]
+        
+        # dataset attribut
+        attrs={}
+        attrs['name']=source['name']
+        attrs['id']=source['id']
+        attrs['version']=source['version']
+        attrs['authors']=source['authors'][0]
+        attrs['description']=source['description']["other"]
+        attrs['description_url']=source['description_URL']
 
-        df=pandas.DataFrame.merge(df1,df2, left_index=True,right_index=True)
-
-        return df
+        ds.attrs = attrs
+        return ds
 
 class DSSHub(object):
     def __init__(self):
