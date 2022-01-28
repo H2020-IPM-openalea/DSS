@@ -10,20 +10,34 @@
 import pandas
 import json
 import xarray as xr
+
 from agroservices import IPM
 from weatherdata import WeatherDataHub
 
-class DSSdata(object):
-    
-    def __init__(self, ModelId, DSSId):
-        self.ModelId = ModelId
-        self.DSSId = DSSId
-        self.ipm = IPM()
+class Model:
+    """[summary]
+    """
+    def __init__(self, dss, model):
+        """[summary]
+
+        Parameters
+        ----------
+        dss : [type]
+            [description]
+        model : [type]
+            [description]
+        """
+        self.pkg = self.dss = dss
+        self.name = model
+        self.ipm_hub = IPM()
         self.ws = WeatherDataHub()
     
-    def model_information(self):
-        return self.ipm.get_model(ModelId=self.DSSId, DSSId=self.ModelId)
-       
+    @property
+    def information(self):
+        return self.ipm_hub.get_model(ModelId=self.dss, DSSId=self.name)
+    
+    model_information = information
+    
     def input_DSS_weather_model_json(
         self,
         timeZone ="UTC",
@@ -105,8 +119,8 @@ class DSSdata(object):
         with open('model_input_fieldobservation.json', 'w') as outfile:
             json.dump(d, outfile)
         return d
-
-    def get_data_model(
+    
+    def run(
         self,
         modelInput="model_input.json"):
         """
@@ -126,6 +140,8 @@ class DSSdata(object):
             DSSId=self.DSSId,
             model_input=modelInput)
         
+        # add a new method that converts an output into an xarray
+        # _output2xarray
         data = {str(var): vals for var, vals in zip(rep['resultParameters'], zip(*rep['locationResult'][0]['data']))}
         data['warningStatus']=rep['locationResult'][0]['warningStatus']
         
@@ -161,7 +177,12 @@ class DSSdata(object):
 
         ds.attrs = attrs
         return ds
-
+    
+    get_data_model = run
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        return self.run(*args, **kwds)
+    
+    # add a __repr__ and __str__ method
 class DSSHub(object):
     def __init__(self):
         self.ipm = IPM()
@@ -211,8 +232,8 @@ class DSSHub(object):
         else:
             raise NotImplementedError()
 
-
-
-
+# retrocompatibility : refactoring
+DSSHub = Hub 
+DSSdata = Model 
 
 
