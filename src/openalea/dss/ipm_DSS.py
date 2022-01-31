@@ -27,14 +27,14 @@ class Model:
         model : [type]
             [description]
         """
-        self.pkg = self.dss = dss
-        self.name = model
+        self.pkg = self.dss = self.ModelId= dss
+        self.name = self.DSSId= model
         self.ipm_hub = IPM()
         self.ws = WeatherDataHub()
     
     @property
     def information(self):
-        return self.ipm_hub.get_model(ModelId=self.dss, DSSId=self.name)
+        return self.ipm_hub.get_model(ModelId=self.name, DSSId=self.dss)
     
     model_information = information
     
@@ -135,7 +135,7 @@ class Model:
             A dataframe containing output of the model
         """
         
-        rep= self.ipm.run_model(
+        rep= self.ipm_hub.run_model(
             ModelId=self.ModelId,
             DSSId=self.DSSId,
             model_input=modelInput)
@@ -158,7 +158,7 @@ class Model:
         ds.time.attrs["units"]="days"
         
         #variable attributs
-        source = self.model_information()
+        source = self.information
         
         data_vars_attrs={el['id']:{key:el[key] for key in ['title','description']} for el in source['output']['result_parameters']}
         
@@ -179,13 +179,13 @@ class Model:
         return ds
     
     get_data_model = run
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
+    def __call__(self, *args: "Any", **kwds: "Any") -> "Any":
         return self.run(*args, **kwds)
     
     # add a __repr__ and __str__ method
-class DSSHub(object):
+class Hub:
     def __init__(self):
-        self.ipm = IPM()
+        self.ipm_hub = IPM()
     
     def list_dss(self, ViewDataFrame=False):
         """
@@ -198,7 +198,7 @@ class DSSHub(object):
         --------
             dictionnary or Dataframe with DSSid, ModelId, name ,description and endpoint for each ModelID
         """
-        rep= self.ipm.get_dss()
+        rep= self.ipm_hub.get_dss()
         d= {el['id']:{el['models'][item]['id']:{"name":el['models'][item]['name'],"description":el['models'][item]['description'],'endpoint':el['models'][item]['execution']['endpoint']}  for item in range(len(el['models']))} for el in rep}
 
         if ViewDataFrame == False:
@@ -222,7 +222,7 @@ class DSSHub(object):
         --------
             DSSdata class of the modelid and dssid
         """
-        rep= self.ipm.get_dss()
+        rep= self.ipm_hub.get_dss()
 
         modelid= [el['id'] for el in rep]
         dssid=[[el['models'][item]['id'] for item in range(len(el['models']))]for el in rep]
