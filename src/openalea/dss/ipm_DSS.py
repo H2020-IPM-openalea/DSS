@@ -37,7 +37,7 @@ class Hub:
         """
         if self._catalog is None:
             self._catalog = self.ipm_hub.get_dss()
-            
+           
         return  {el["id"]: {item["id"]:item for item in el["models"]} for el in self._catalog}
     
     
@@ -56,10 +56,12 @@ class Hub:
         """
         if view=="dataframe":
             df=pandas.Series(self.catalog).apply(pandas.Series).stack().apply(pandas.Series)
-            df=df[["pests","crops","description","input","output"]]
+            df=df[["pests","crops","description"]]
             df=pandas.concat([df.drop("description",axis=1),df['description'].apply(pandas.Series)],axis=1)
             df.rename(columns={'other':'description'}, inplace=True)
             df=df.drop(['created_by', 'age', 'assumptions', 'peer_review', 'case_studies'],axis=1)
+            df=df.reset_index()
+            df.rename(columns={"level_0":"dss","level_1":"models"},inplace=True)
             
             return df
         
@@ -78,7 +80,7 @@ class Hub:
         """
         
         
-        d={dss:[model for model in h.catalog[dss]] for dss in h.catalog} # dict with dss:model
+        d={dss:[model for model in self.catalog[dss]] for dss in self.catalog} # dict with dss:model
         
         if (dss in d and model in d[dss]):
             return Model(dss,model)
@@ -109,8 +111,8 @@ class Model(Hub):
         self.model=model
         Hub.__init__(self)
     
-    @property    
-    def information(self):
+       
+    def informations(self,display=None):
         """ Return information of the model
 
         Returns
@@ -118,7 +120,37 @@ class Model(Hub):
         dict
             dict containing model information 
         """
-        return self.catalog[self.dss][self.model]
+        inf=self.catalog[self.dss][self.model]
+        
+        if display=="dataframe":
+            d=dict()
+            for (key,value) in inf.items():
+                if key in ['name', 'id', 'version', 'type_of_decision']:
+                    d[key]=value
+                if key in ['pests', 'crops']:
+                    d[key]= value
+                if key=="description":
+                    d[key]=value["other"]
+                if key=="input":
+                    if value["weather_parameters"] is not None:
+                        d["weather input"]= ", ".join([str(el["parameter_code"]) for el in value["weather_parameters"]])
+                    else:
+                        d["weather input"]= None
+                    
+                    if value["field_observation"] is not None:
+                        d["field_observation input"]= json.loads(inf["execution"]["input_schema"])["definitions"]["fieldObs_PSILRO"]["required"]
+                    else:
+                        d["field_observation input"]=None
+                if key == "output":
+                    d[key]=", ".join([el["id"] for el in value["result_parameters"]])
+                    d["output_description"]=", ".join([el["title"] for el in value["result_parameters"]])
+                  
+
+            df=pandas.Series(d).to_frame().T
+            df=df[["name","id",'description',"type_of_decision","pests","crops","weather input","field_observation input","output","output_description"]]
+            return df
+        else:        
+            return self.catalog[self.dss][self.model]
     
     def __xarray_convert__(self, output):
         """ Convert model output of the model in xarray dataset 
@@ -135,9 +167,9 @@ class Model(Hub):
         """
         
         data = {str(var): vals for var, vals in zip(output['resultParameters'], zip(*output['locationResult'][0]['data']))}
+        data['warningStatus']=output['locationResult'][0]['warningStatus']
+        output_result = {key: data[key] for key in [item["id"] for item in self.informations()["output"]["result_parameters"]]}
         
-        output_result = {key: data[key] for key in [item["id"] for item in self.information["output"]["result_parameters"]]}
-        #data['warningStatus']=output['locationResult'][0]['warningStatus']
         
         times_index= pandas.date_range(start=output['timeStart'], end=output['timeEnd'], freq=str(output['interval'])+"s")
         
@@ -152,7 +184,7 @@ class Model(Hub):
         ds.time.attrs["units"]="days"
         
         #variable attributs
-        source = self.information
+        source = self.informations()
 
         data_vars_attrs={el['id']:{key:el[key] for key in ['title','description']} for el in source['output']['result_parameters']}
 
@@ -266,7 +298,54 @@ class Model(Hub):
         output : xarray.Dataset
             Return a plot from output model conform to the description of output information of the model 
         """
-        output.to_dataframe().plot.line()
-        plt.ylabel(self.information["output"]['chart_heading'])
-        plt.title(self.information["output"]['chart_heading'])
+        output.fillna(0).to_dataframe().plot.line()
+        plt.ylabel(self.informations()["output"]['chart_groups'][0]["title"])
         plt.suptitle(output.name)      
+        
+    def df_reader_fieldObservation(self,path,
+                               longitude,
+                               latitude,
+                               timeZone,
+                               sep,
+                               dayfirst,
+                               pestEPPOCode,
+                               cropEPPOCode,
+                               convert_name=None):
+        r'''
+        Reader dataframe for field observations.It must contains:
+        Date of observation: start Date of experiment, End date experiment and date of Observation
+
+        Parameters
+        ----------
+        path : str, optional
+            field observation datafile path, by default r'C:\Users\mlabadie\Documents\GitHub\dss\example\psilarobs.csv'
+        longitude : float, optional
+            longitude in degree of experimental site, by default 11.025635
+        latitude : float, optional
+            latitude in degree of experimental site, by default 59.715791
+        timeZone : str, optional
+            timezone of experimental site, by default "Europe/Paris"
+        sep : str, optional
+            separator of file, by default ";"
+        dayfirst : bool, optional
+            if date begin by time True else False, by default True
+        PestEPPOCode: str
+            pestEPPOCode of the model selected here SEPTAP
+        cropEPPOCode: str
+            cropEPPOCode of the model selected here APUGD
+
+        Returns
+        -------
+        pandas.Dataframe
+            return a dataframe with attribute information need to compute observation file input
+        '''
+        data=pandas.read_csv(path,sep=sep)
+        time=pandas.to_datetime(data["time"],dayfirst=dayfirst).tolist()
+        data.index=pandas.date_range(start=time[0],end=time[-1],tz=timeZone)    
+        data=data.drop(columns="time")
+        data.attrs={"time":np.datetime_as_string(data.dropna().index.tz_convert("UTC").values[0],timezone='UTC',unit="m"),"location":{"type":"Point","coordinates":[str(longitude), str(latitude)]},"pestEPPOCode":pestEPPOCode,"cropEPPOCode":cropEPPOCode}
+        if convert_name is not None:
+            data=data.rename(convert_name)
+        else:
+            data=data
+        return data
