@@ -1,6 +1,7 @@
 name: DSS
 channels:
   - conda-forge
+  - openalea3
 
 dependencies:
  - python=3.8
@@ -18,3 +19,6 @@ dependencies:
  - sphinx_rtd_theme
  - nbsphinx
  - nbsphinx-link
+ - pip:
+  - agroservices
+  - weatherdata
