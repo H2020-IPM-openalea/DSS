@@ -1,6 +1,6 @@
 # DSS : An open source library for Openalea IPM-Decision DSS
 
-**Authors:** Marc LABADIE, Christophe Pradal, Christian Fournier, Corrine Robert
+**Authors:** Marc LABADIE, Christophe Pradal, Christian Fournier, Corinne Robert
 **Mainteners:**   
 **Institutes** : INRA, CIRAD  
 **Licence:** [CeCILL-C](https://raw.githubusercontent.com/H2020-IPM-openalea/DSS/master/LICENSE.txt)  
