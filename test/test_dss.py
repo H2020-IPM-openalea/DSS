@@ -6,7 +6,7 @@ Created on Thu Apr 25 14:57:47 2013
 """
 
 from alinea.astk.Weather import sample_weather
-from openalea.dss.mini_models import contamination_risk
+from openalea.dss.datamanipulation import contamination_risk
 from pandas import date_range
 
 def test_fake_dss():
