@@ -6,13 +6,11 @@ channels:
 dependencies:
  - python=3.8
  - openalea.deploy
- - agroservices
  - requests (agroservices) 
  - appdirs (agroservices)
  - bs4 (agroservices)
  - colorlog (agroservices)
  - requests_cache (agroservices)
- - weatherdata
  - xarray (weatherdata)
  - pandas
  - pytest
