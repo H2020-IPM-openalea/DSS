@@ -60,7 +60,7 @@ class Hub:
             # df=pandas.concat([df.drop("description",axis=1),df['description'].apply(pandas.Series)],axis=1)
             # df.rename(columns={'other':'description'}, inplace=True)
             # df=df.drop(['created_by', 'age', 'assumptions', 'peer_review', 'case_studies'],axis=1)
-            # df=df.reset_index()
+            df=df.reset_index()
             df.rename(columns={"level_0":"dss","level_1":"models"},inplace=True)
             
             return df
