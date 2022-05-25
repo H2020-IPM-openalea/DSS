@@ -57,10 +57,10 @@ class Hub:
         if view=="dataframe":
             df=pandas.Series(self.catalog).apply(pandas.Series).stack().apply(pandas.Series)
             df=df[["pests","crops","description"]]
-            df=pandas.concat([df.drop("description",axis=1),df['description'].apply(pandas.Series)],axis=1)
-            df.rename(columns={'other':'description'}, inplace=True)
-            df=df.drop(['created_by', 'age', 'assumptions', 'peer_review', 'case_studies'],axis=1)
-            df=df.reset_index()
+            # df=pandas.concat([df.drop("description",axis=1),df['description'].apply(pandas.Series)],axis=1)
+            # df.rename(columns={'other':'description'}, inplace=True)
+            # df=df.drop(['created_by', 'age', 'assumptions', 'peer_review', 'case_studies'],axis=1)
+            # df=df.reset_index()
             df.rename(columns={"level_0":"dss","level_1":"models"},inplace=True)
             
             return df
@@ -130,7 +130,7 @@ class Model(Hub):
                 if key in ['pests', 'crops']:
                     d[key]= value
                 if key=="description":
-                    d[key]=value["other"]
+                    d[key]=value
                 if key=="input":
                     if value["weather_parameters"] is not None:
                         d["weather input"]= ", ".join([str(el["parameter_code"]) for el in value["weather_parameters"]])
@@ -198,7 +198,7 @@ class Model(Hub):
         attrs['id']=source['id']
         attrs['version']=source['version']
         attrs['authors']=source['authors'][0]
-        attrs['description']=source['description']["other"]
+        attrs['description']=source['description']
         attrs['description_url']=source['description_URL']
 
         ds.attrs = attrs
