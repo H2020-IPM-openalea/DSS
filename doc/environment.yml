@@ -5,7 +5,6 @@ channels:
 
 dependencies:
   - python=3.8
-  - openalea.deploy
   - requests  
   - appdirs 
   - bs4 
@@ -17,6 +16,5 @@ dependencies:
   - sphinx_rtd_theme
   - nbsphinx
   - nbsphinx-link
-  - pip:
-    - agroservices
-    - weatherdata
+  - agroservices
+  - weatherdata
