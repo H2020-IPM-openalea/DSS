@@ -1,7 +1,9 @@
 # DSS : An open source library for Openalea IPM-Decision DSS
 
-**Authors:** Marc Labadie, Christophe Pradal, Christian Fournier
+**Authors:** Marc Labadie, Christophe Pradal, Christian Fournier 
+
 **Licence:** [GPL-V3](https://www.gnu.org/licenses/gpl-3.0.txt)  
+
 **Status:** Python package
 
 ## About
