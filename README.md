@@ -1,3 +1,9 @@
+[![Documentation Status](https://readthedocs.org/projects/ipmdss/badge/?version=latest)](https://ipmdss.readthedocs.io/en/latest/?badge=latest)
+[![Anaconda-Server Badge](https://anaconda.org/openalea3/openalea.dss/badges/version.svg)](https://anaconda.org/openalea3/openalea.dss)
+[![Anaconda-Server Badge](https://anaconda.org/openalea3/openalea.dss/badges/latest_release_date.svg)](https://anaconda.org/openalea3/openalea.dss)
+[![Anaconda-Server Badge](https://anaconda.org/openalea3/openalea.dss/badges/platforms.svg)](https://anaconda.org/openalea3/openalea.dss)
+[![Anaconda-Server Badge](https://anaconda.org/openalea3/openalea.dss/badges/license.svg)](https://anaconda.org/openalea3/openalea.dss)
+
 # DSS : An open source library for Openalea IPM-Decision DSS
 
 **Authors:** Marc Labadie, Christophe Pradal, Christian Fournier 
