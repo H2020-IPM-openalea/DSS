@@ -18,33 +18,14 @@ Repository containing DSS model of openalea for [H2020 IPM-Decision Project](htt
 
 ### Installation
 
+```bash
+conda install -c openalea3 -c conda-forge openalea.dss
+```
 ### Requierements
 
-* python >= 3.8
-* openalea.deploy
-* agroservices
-* requests (agroservices)
-* appdirs (agroservices)
-* bs4 (agroservices)
-* colorlog (agroservices)
-* requests_cache (agroservices)
-* weatherdata
-* xarray (weatherdata)
-* pandas
-
-
-* openalea.deploy
-* agroservices
-* requests (agroservices)
-* appdirs (agroservices)
-* bs4 (agroservices)
-* colorlog (agroservices)
-* requests_cache (agroservices)
-* weatherdata
-* xarray (weatherdata)
-* pandas
-* jupyter
-
+* python >= 3.6
+* [agroservices](https://github.com/openalea/agroservices)
+* [weatherdata](https://github.com/H2020-IPM-openalea/weatherdata)
 
 ### Documentation
 readthedoc todo
