@@ -30,19 +30,15 @@ def test_information():
     
 def test_run():
     # Weatherdata
-    ws=WeatherDataHub()
-    slu=ws.get_ressource(name="SLU Lantmet service")
+    ws = WeatherDataHub()
+    fmi = ws.get_ressource(name='fi.fmi.observation.station')
 
-    weather=slu.data(parameters=[1002],latitude=[67.28],longitude=[14.37],
-                    timeStart='2021-06-01',timeEnd="2021-08-20",timeZone="Europe/Paris",
-                    display="json")
-    
+    weather = fmi.data(stationId=[101533], parameters=[1002], interval=3600, display="json")
     # run Model
     ds= psi.run(weatherdata=weather)
     assert type(ds) is xr.Dataset
     assert list(ds.data_vars)==['TMDD5C', 'THRESHOLD_1', 'THRESHOLD_2', 'THRESHOLD_3']
     assert list(ds.dims)==["time"]
-    assert ds.sizes==81
     assert keys_exists(ds.attrs,keys=['name', 'id', 'version', 'authors', 'description', 'description_url'])
 
     return ds

@@ -1,10 +1,17 @@
-Metadata-Version: 1.0
-Name: OpenAlea.dss
-Version: 0.1
-Summary: Dss models.
-Home-page: UNKNOWN
-Author: XXX
-Author-email: XXX@XXX
+Metadata-Version: 2.1
+Name: openalea.dss
+Version: 0.9.0
+Summary: IPM DSS Python interface
+Home-page: 
+Author: * Christian Fournier
+* Marc Labadie
+* Christophe Pradal
+
+Maintainer: 
+Maintainer-email: 
 License: Cecill-C
-Description: dss
-Platform: UNKNOWN
+Keywords: openalea,DSS,weather
+License-File: LICENSE.txt
+License-File: AUTHORS.txt
+
+Management of IPM DSS from python, and transform DSS outputs in a native and efficient Python data structure 
