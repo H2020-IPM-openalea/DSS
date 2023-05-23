@@ -12,7 +12,7 @@ import numpy as np
 import json
 import xarray as xr
 import matplotlib.pyplot as plt
-from agroservices import IPM
+from agroservices.ipm.ipm import IPM
 
 class Hub:
     """Class Hub
@@ -38,7 +38,7 @@ class Hub:
         if self._catalog is None:
             self._catalog = self.ipm_hub.get_dss()
            
-        return  {el["id"]: {item["id"]:item for item in el["models"]} for el in self._catalog}
+        return {k: v['models'] for k,v in self._catalog.items()}
     
     
     def display(self,view="dataframe"):
@@ -244,7 +244,7 @@ class Model(Hub):
                         },
                     "weatherData": weatherdata[0]
                 }
-                return json.dumps(d)
+                return d
                 
             else: 
                 if type(fieldObservation) is pandas.DataFrame:
@@ -279,11 +279,11 @@ class Model(Hub):
                         }
                     
                     field_observation_input["configParameters"].update(json_obs)
-                    return json.dumps(field_observation_input)
-                      
-        output= self.ipm_hub.run_model(ModelId=self.dss,
-            DSSId=self.model,
-            model_input= input(weatherdata=weatherdata,fieldObservation=fieldObservation))
+                    return field_observation_input
+        model = self.ipm_hub.get_model(ModelId=self.model,
+            DSSId=self.dss)
+        output= self.ipm_hub.run_model(model,
+            input_data= input(weatherdata=weatherdata,fieldObservation=fieldObservation))
         
         if view== "ds":
             return self.__xarray_convert__(output=output)
