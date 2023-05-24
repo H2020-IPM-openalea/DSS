@@ -78,7 +78,10 @@ class Hub:
         """
 
         if (dss in self._catalog and model in self._catalog[dss]['models']):
-            return Model(self._catalog[dss]['models'][model], self._ipm)
+            model_meta = self._catalog[dss]['models'][model].copy()
+            model_dss = self._catalog[dss].copy()
+            model_dss.pop('models')
+            return Model(model_meta, model_dss, self._ipm)
         else:
             raise ValueError('Model ' + model + ' not found in ' + dss)
         
@@ -92,7 +95,7 @@ class Model(object):
         Class allows to access IPM catalog and get one model
     """
     
-    def __init__(self, model, ipm_services):
+    def __init__(self, model, dss, ipm_services):
         """Init of Model class model
 
         Parameters
@@ -102,10 +105,31 @@ class Model(object):
         model : str
             id of the model
         """
-        self.model = model
+        self._model = model
+        self._dss = dss
         self._ipm = ipm_services
-    
-       
+
+    @property
+    def model_id(self):
+        return self._model['id']
+    @property
+    def model(self):
+        return self._model['name']
+    @property
+    def dss_id(self):
+        return self._dss['id']
+    @property
+    def dss(self):
+        return self._dss['name']
+
+    @property
+    def meta(self):
+        meta = self._model.copy()
+        for special in ['input', 'output', 'execution']:
+            meta.pop(special)
+        return meta
+
+
     def informations(self,display=None):
         """ Return information of the model
 
