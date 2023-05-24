@@ -109,6 +109,12 @@ class Model(object):
         self._dss = dss
         self._ipm = ipm_services
 
+        def _read_parameter(item):
+            item.pop('id')
+            item.pop('aggregationType')
+            return item
+        self._parameters = {p['id'] : _read_parameter(p) for p in self._ipm.get_parameter()}
+
     @property
     def model_id(self):
         return self._model['id']
@@ -129,6 +135,47 @@ class Model(object):
             meta.pop(special)
         return meta
 
+    @property
+    def input(self):
+        input = {}
+
+        _input_schema = self._model['execution']['input_schema'].copy()
+        _input = self._model['input'].copy()
+        for k in ('modelId', 'weatherData', 'fieldObservations'):
+            if k in _input_schema['properties']:
+                _input_schema['properties'].pop(k)
+        for p in _input_schema['properties'].values():
+            if isinstance(p, dict):
+                if 'properties' in p:
+                    input.update(p['properties'])
+                else:
+                    input.update(p)
+
+        if _input['weather_parameters'] is not None:
+            wp = _input['weather_parameters']
+            parameters = [elt['parameter_code'] for elt in wp]
+            input.update({p: self._parameters[p] for p in parameters})
+
+            starts = {item['determined_by']: item['value']
+                      for item in _input['weather_data_period_start']}
+            if 'INPUT_SCHEMA_PROPERTY' in starts:
+                name = 'start_date'
+                fields = starts['INPUT_SCHEMA_PROPERTY'].split('.')
+                if len(fields) > 1:
+                    name = fields[-1]
+                if name not in input:
+                    input[name] = {'desc': 'start date'}
+            ends = {item['determined_by']: item['value']
+                      for item in _input['weather_data_period_end']}
+            if 'INPUT_SCHEMA_PROPERTY' in ends:
+                name = 'end_date'
+                fields = ends['INPUT_SCHEMA_PROPERTY'].split('.')
+                if len(fields) > 1:
+                    name = fields[-1]
+                if name not in input:
+                    input[name] = {'desc': 'end date'}
+
+        return input
 
     def informations(self,display=None):
         """ Return information of the model
