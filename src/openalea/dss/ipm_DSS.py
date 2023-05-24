@@ -23,8 +23,8 @@ class Hub:
     def __init__(self):
         """[summary]
         """
-        self.ipm_hub=IPM()
-        self._catalog = None
+        self._ipm = IPM()
+        self._catalog = self._ipm.get_dss()
     
     @property 
     def catalog(self):
@@ -35,9 +35,7 @@ class Hub:
         [dict]
             [dict of dss catalog with meta-information by dss and model]
         """
-        if self._catalog is None:
-            self._catalog = self.ipm_hub.get_dss()
-           
+
         return {k: v['models'] for k,v in self._catalog.items()}
     
     
@@ -78,17 +76,14 @@ class Hub:
         model : str, optional
             [description], by default "PSILARTEMP"
         """
-        
-        
-        d={dss:[model for model in self.catalog[dss]] for dss in self.catalog} # dict with dss:model
-        
-        if (dss in d and model in d[dss]):
-            return Model(dss,model)
+
+        if (dss in self._catalog and model in self._catalog[dss]['models']):
+            return Model(self._catalog[dss]['models'][model], self._ipm)
         else:
-            raise NotImplementedError()
+            raise ValueError('Model ' + model + ' not found in ' + dss)
         
 
-class Model(Hub):
+class Model(object):
     """ Model Class derived from Hub. It allows to displays informations and run model and plot output
 
     Parameters
@@ -97,7 +92,7 @@ class Model(Hub):
         Class allows to access IPM catalog and get one model
     """
     
-    def __init__(self, dss, model):
+    def __init__(self, model, ipm_services):
         """Init of Model class model
 
         Parameters
@@ -107,9 +102,8 @@ class Model(Hub):
         model : str
             id of the model
         """
-        self.dss=dss
-        self.model=model
-        Hub.__init__(self)
+        self.model = model
+        self._ipm = ipm_services
     
        
     def informations(self,display=None):
@@ -120,7 +114,7 @@ class Model(Hub):
         dict
             dict containing model information 
         """
-        inf=self.catalog[self.dss][self.model]
+        inf=self.model
         
         if display=="dataframe":
             d=dict()
@@ -150,7 +144,7 @@ class Model(Hub):
             df=df[["name","id",'description',"type_of_decision","pests","crops","weather input","field_observation input","output","output_description"]]
             return df
         else:        
-            return self.catalog[self.dss][self.model]
+            return self.model
     
     def __xarray_convert__(self, output):
         """ Convert model output of the model in xarray dataset 
@@ -205,7 +199,7 @@ class Model(Hub):
         
         return ds
     
-    def run(self,weatherdata=None,fieldObservation=None,view="ds"):
+    def run(self, weatherdata=None, fieldObservation=None,view="ds"):
         """ Run model
 
         Parameters
@@ -280,10 +274,9 @@ class Model(Hub):
                     
                     field_observation_input["configParameters"].update(json_obs)
                     return field_observation_input
-        model = self.ipm_hub.get_model(ModelId=self.model,
-            DSSId=self.dss)
-        output= self.ipm_hub.run_model(model,
-            input_data= input(weatherdata=weatherdata,fieldObservation=fieldObservation))
+
+        output= self._ipm.run_model(self.model,
+                                    input_data= input(weatherdata=weatherdata,fieldObservation=fieldObservation))
         
         if view== "ds":
             return self.__xarray_convert__(output=output)
