@@ -132,9 +132,9 @@ class Model(object):
 
     @property
     def input_meta(self):
-        input = {'parameters': {},
-                 'weatherdata': {},
-                 'fieldobservations': {}}
+        inputm = {'parameters': {},
+                 'weather_data': {},
+                 'field_observations': {}}
 
         _input_schema = self._model['execution']['input_schema'].copy()
         _input = self._model['input'].copy()
@@ -145,35 +145,75 @@ class Model(object):
         for p in _input_schema['properties'].values():
             if isinstance(p, dict):
                 if 'properties' in p:
-                    input['parameters'].update(p['properties'])
+                    inputm['parameters'].update(p['properties'])
                 else:
-                    input['parameters'].update(p)
+                    inputm['parameters'].update(p)
 
         if _input['weather_parameters'] is not None:
             wp = _input['weather_parameters']
             parameters = [elt['parameter_code'] for elt in wp]
-            input['weatherdata'].update({p: self._parameters[p] for p in parameters})
+            inputm['weather_data'].update({p: self._parameters[p] for p in parameters})
 
-            starts = {item['determined_by']: item['value']
-                      for item in _input['weather_data_period_start']}
-            if 'INPUT_SCHEMA_PROPERTY' in starts:
-                name = 'start_date'
-                fields = starts['INPUT_SCHEMA_PROPERTY'].split('.')
-                if len(fields) > 1:
-                    name = fields[-1]
-                if name not in input['parameters']:
-                    input['parameters'][name] = {'desc': 'start date'}
-            ends = {item['determined_by']: item['value']
-                      for item in _input['weather_data_period_end']}
-            if 'INPUT_SCHEMA_PROPERTY' in ends:
-                name = 'end_date'
-                fields = ends['INPUT_SCHEMA_PROPERTY'].split('.')
-                if len(fields) > 1:
-                    name = fields[-1]
-                if name not in input['parameters']:
-                    input['parameters'][name] = {'desc': 'end date'}
+            # filter parameters that are used internaly to query weather data
+            for w in ('weather_data_period_start', 'weather_data_period_end'):
+                items = {item['determined_by']: item['value']
+                            for item in _input[w]}
+                if 'INPUT_SCHEMA_PROPERTY' in items:
+                    fields = items['INPUT_SCHEMA_PROPERTY'].split('.')
+                    if len(fields) > 1:
+                        name = fields[-1]
+                        if name in inputm['parameters']:
+                            inputm['parameters'].pop(name)
 
-        return input
+        if _input['field_observation'] is not None:
+            for w in ('fieldObservations', 'fieldObservationQuantifications'):
+                if w in inputm['parameters']:
+                    inputm['parameters'].pop(w)
+            observations = next(iter(_input_schema['definitions'].values()))
+            inputm['field_observations'] = observations['properties']
+
+        return inputm
+
+    def as_node(self):
+        """Construct inputs of an Openalea node representing the model"""
+        input = []
+
+        if len(self.input_meta['weather_data']) > 0:
+            input.append({'name':'times',
+                          'description': 'TimeStamp sequence',
+                          'interface': 'ISeq',
+                          'ipm_category': 'times'})
+        for p, v in self.input_meta['weather_data'].items():
+            dp = {}
+            dp['name'] = p
+            dp['description'] = v['name']
+            dp['interface'] = 'ISeq'
+            dp['ipm_category'] = 'weather_data'
+            input.append(dp)
+
+        for p, v in self.input_meta['field_observations'].items():
+            dp = {}
+            dp['name'] = p
+            dp['description'] = v['title']
+            dp['interface'] = 'ISeq'
+            dp['ipm_category'] = 'field_observations'
+            input.append(dp)
+
+        for p,v in self.input_meta['parameters'].items():
+            dp = {}
+            dp['name'] = p
+            dp['description'] = v.get('title', None)
+            dp['interface'] = v.get('type', None)
+            dp['value'] = v.get('default', None)
+            dp['ipm_category'] = 'parameter'
+            input.append(dp)
+
+        node = dict(
+            name=self.meta['id'],
+            description=self.meta['name'],
+            input=input
+        )
+        return node
 
     def informations(self,display=None):
         """ Return information of the model
@@ -373,14 +413,14 @@ class Model(object):
                                pestEPPOCode,
                                cropEPPOCode,
                                convert_name=None):
-        r'''
-        Reader dataframe for field observations.It must contains:
+        """
+        Reader dataframe for field observations.It must contain:
         Date of observation: start Date of experiment, End date experiment and date of Observation
-
+        
         Parameters
         ----------
         path : str, optional
-            field observation datafile path, by default r'C:\Users\mlabadie\Documents\GitHub\dss\example\psilarobs.csv'
+            field observation datafile path,
         longitude : float, optional
             longitude in degree of experimental site, by default 11.025635
         latitude : float, optional
@@ -395,12 +435,12 @@ class Model(object):
             pestEPPOCode of the model selected here SEPTAP
         cropEPPOCode: str
             cropEPPOCode of the model selected here APUGD
-
+        
         Returns
         -------
         pandas.Dataframe
             return a dataframe with attribute information need to compute observation file input
-        '''
+        """
         data=pandas.read_csv(path,sep=sep)
         time=pandas.to_datetime(data["time"],dayfirst=dayfirst).tolist()
         data.index=pandas.date_range(start=time[0],end=time[-1],tz=timeZone)    
