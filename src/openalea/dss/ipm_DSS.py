@@ -13,6 +13,13 @@ import json
 import xarray as xr
 import matplotlib.pyplot as plt
 
+def patch_call(instance, func, doc):
+    class _(type(instance)):
+        def __call__(self, *arg, **kwarg):
+           return func(*arg, **kwarg)
+    instance.__class__ = _
+    instance.__call__.__func__.__doc__ = doc
+
 class DSS(object):
     def __init__(self, name, meta, models, manager):
         self.name = name
@@ -44,7 +51,7 @@ class DSS(object):
                        package_dict=package_dict)
         return package
 
-    def get(self,  model="PSILARTEMP"):
+    def get(self,  model_name="PSILARTEMP"):
         """[Get model]
 
         Parameters
@@ -55,10 +62,15 @@ class DSS(object):
             [description], by default "PSILARTEMP"
         """
 
-        if model in self.models:
-            return Model(self.models[model], self.name, self._dssm)
+        if model_name in self.models:
+             model = Model(self.models[model_name], self.name, self._dssm)
+
+             def _model_call(*args, **kwargs):
+                 return kwargs
+             patch_call(model, _model_call, 'test_doc')
+             return model
         else:
-            raise ValueError('Model ' + model + ' not found in ' + self.name)
+            raise ValueError('Model ' + model_name + ' not found in ' + self.name)
 class Model(object):
     """ Model Class derived from Hub. It allows to displays informations and run model and plot output
 

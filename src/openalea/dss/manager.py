@@ -72,7 +72,7 @@ class Manager:
         return dss.get(model_name)
 
     def run_model(self, model, time_start=None, time_end=None, weather_data_source=None, field_observations=None):
-        """Run model with standardized call to ipm webservice"""
+        """Run model in a similar way to ipm webservice (repeated runs over a time serie)"""
         if weather_data_source is None:
             weather_data_source = fakers.WeatherDataSource()
         parameters = [item['parameter_code'] for item in model._model['input']['weather_parameters']]
@@ -81,6 +81,9 @@ class Manager:
         field_data = None
         input_data = agro_fakers.input_data(model._model, weather_data, field_data)
         return self._ipm.run_model(model._model, input_data)
+
+    def run_as_node(self, model, **kwargs):
+        """run model in """
 
     def create_package(self,dss_name):
         """Create a visuala package for a dss, together with a python module containing
@@ -96,9 +99,7 @@ dss_manager = Manager()
 def {dss_name_}_{model_name}(**kwargs):
     dss = dss_manager.dss({dss_name})
     model = dss.get({model_name})
-    input_data = model.input_data(**kwargs)
-    output_data = dss_manager._ipm.run_model(model._model, input_data)
-    return model.output(output_data)
+    return model(**kwargs)
         """
         dss_name_ = '_'.join(dss_name.split('.'))
         for model_name in dss.models:
