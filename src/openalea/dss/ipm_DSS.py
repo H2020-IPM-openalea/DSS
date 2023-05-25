@@ -20,8 +20,30 @@ class DSS(object):
         self.models=models
         self._dssm = manager
 
+    @property
+    def name_(self):
+        return '_'.join(self.name.split('.'))
+
     def as_package(self):
-        return {k: self.get(k).as_node() for k,v in self.models.items()}
+        org = self.meta['organization']
+        institute = ', '.join([org['name'],org['address'], org['postal_code'], org['city'], org['country']])
+
+        metainfo=dict(
+            license='unknown',
+            version=self.meta['version'],
+            authors=', '.join([org['email'], org['url']]),
+            institutes=institute,
+            url=self.meta['url'],
+            description=self.meta['name']
+        )
+
+        package_dict = {k: self.get(k).as_node() for k,v in self.models.items()}
+
+        package = dict(name=self.name_,
+                       metainfo=metainfo,
+                       package_dict=package_dict)
+        return package
+
     def get(self,  model="PSILARTEMP"):
         """[Get model]
 
@@ -73,7 +95,7 @@ class Model(object):
         return {k: v for k, v in self._model.items() if k not in ['input', 'output', 'execution']}
 
     @property
-    def input_meta(self):
+    def inputs(self):
         inputm = {'parameters': {},
                  'weather_data': {},
                  'field_observations': {}}
@@ -116,38 +138,49 @@ class Model(object):
 
         return inputm
 
+    @property
+    def outputs(self):
+        return [{k:v for k,v in d.items() if k != 'chart_info'} for d in self._model['output']['result_parameters']]
+
     def as_node(self):
         """Construct inputs of an Openalea node representing the model"""
-        input = []
 
-        for p, v in self.input_meta['weather_data'].items():
+        inputs = []
+        for p, v in self.inputs['weather_data'].items():
             dp = {}
             dp['name'] = p
             dp['description'] = v['name']
             dp['interface'] = 'Ifloat'
-            input.append(dp)
+            inputs.append(dp)
 
-        for p, v in self.input_meta['field_observations'].items():
+        for p, v in self.inputs['field_observations'].items():
             dp = {}
             dp['name'] = p
             dp['description'] = v['title']
             dp['interface'] = 'I' + v.get('type', 'float')
-            input.append(dp)
+            inputs.append(dp)
 
-        for p,v in self.input_meta['parameters'].items():
+        for p,v in self.inputs['parameters'].items():
             dp = {}
             dp['name'] = p
             dp['description'] = v.get('title', None)
             dp['interface'] = v.get('type', None)
             dp['value'] = v.get('default', None)
-            input.append(dp)
+            inputs.append(dp)
+
+        outputs=[]
+        for item in self.outputs:
+            dp={}
+            dp['name'] = item['id']
+            dp['description'] = item['title']
+            outputs.append(dp)
 
         node = dict(
             name=self.meta['id'],
             category='DSS',
             description=self.meta['name'],
-            inputs=input,
-            outputs=None,
+            inputs=inputs,
+            outputs=outputs,
             nodemodule='_'.join(self.dss.split('.')) + '.py',
             nodeclass='_'.join(self.dss.split('.')) + '_' + self.model_id,
             authors=self.meta['authors']
