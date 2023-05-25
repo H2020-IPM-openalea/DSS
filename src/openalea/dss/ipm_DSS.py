@@ -21,7 +21,7 @@ class DSS(object):
         self._dssm = manager
 
     def as_package(self):
-        return {k: v.as_node() for k,v in self.models.items()}
+        return {k: self.get(k).as_node() for k,v in self.models.items()}
     def get(self,  model="PSILARTEMP"):
         """[Get model]
 
@@ -57,7 +57,7 @@ class Model(object):
             id of the model
         """
         self._model = model
-        self._dss = dss
+        self.dss = dss
         self._dssm = manager
         self._parameters = {p['id'] : p for p in self._dssm._ipm.get_parameter()}
 
@@ -67,19 +67,10 @@ class Model(object):
     @property
     def model(self):
         return self._model['name']
-    @property
-    def dss_id(self):
-        return self._dss['id']
-    @property
-    def dss(self):
-        return self._dss['name']
 
     @property
     def meta(self):
-        meta = self._model.copy()
-        for special in ['input', 'output', 'execution']:
-            meta.pop(special)
-        return meta
+        return {k: v for k, v in self._model.items() if k not in ['input', 'output', 'execution']}
 
     @property
     def input_meta(self):
@@ -129,25 +120,18 @@ class Model(object):
         """Construct inputs of an Openalea node representing the model"""
         input = []
 
-        if len(self.input_meta['weather_data']) > 0:
-            input.append({'name':'times',
-                          'description': 'TimeStamp sequence',
-                          'interface': 'ISeq',
-                          'ipm_category': 'times'})
         for p, v in self.input_meta['weather_data'].items():
             dp = {}
             dp['name'] = p
             dp['description'] = v['name']
-            dp['interface'] = 'ISeq'
-            dp['ipm_category'] = 'weather_data'
+            dp['interface'] = 'Ifloat'
             input.append(dp)
 
         for p, v in self.input_meta['field_observations'].items():
             dp = {}
             dp['name'] = p
             dp['description'] = v['title']
-            dp['interface'] = 'ISeq'
-            dp['ipm_category'] = 'field_observations'
+            dp['interface'] = 'I' + v.get('type', 'float')
             input.append(dp)
 
         for p,v in self.input_meta['parameters'].items():
@@ -156,13 +140,17 @@ class Model(object):
             dp['description'] = v.get('title', None)
             dp['interface'] = v.get('type', None)
             dp['value'] = v.get('default', None)
-            dp['ipm_category'] = 'parameter'
             input.append(dp)
 
         node = dict(
             name=self.meta['id'],
+            category='DSS',
             description=self.meta['name'],
-            input=input
+            inputs=input,
+            outputs=None,
+            nodemodule='_'.join(self.dss.split('.')) + '.py',
+            nodeclass='_'.join(self.dss.split('.')) + '_' + self.model_id,
+            authors=self.meta['authors']
         )
         return node
 

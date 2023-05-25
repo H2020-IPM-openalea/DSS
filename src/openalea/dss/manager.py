@@ -2,8 +2,9 @@
 import pandas
 
 from agroservices.ipm.ipm import IPM
-import agroservices.ipm.fakers as fakers
+import agroservices.ipm.fakers as agro_fakers
 from openalea.dss.ipm_DSS import DSS
+import openalea.dss.fakers as fakers
 
 
 class Manager:
@@ -70,12 +71,15 @@ class Manager:
         dss = self.dss(dss_name)
         return dss.get(model_name)
 
-    def run_model(self, model, startDate, endDate, interval, location, weather_data_source, field_observations):
+    def run_model(self, model, time_start=None, time_end=None, weather_data_source=None, field_observations=None):
         """Run model with standardized call to ipm webservice"""
-        parameters = model.parameter_codes
-        weather_data = weather_data_source.data(parameters, startDate, endDate, interval,display='json' )
-        field_data = field_observations.data(startDate, endDate, interval, location)
-        input_data = fakers.input_data(model._model, weather_data, field_data)
+        if weather_data_source is None:
+            weather_data_source = fakers.WeatherDataSource()
+        parameters = [item['parameter_code'] for item in model._model['input']['weather_parameters']]
+        interval = model._model['input']['weather_parameters'][0]['interval']
+        weather_data = weather_data_source.data(parameters=parameters, timeStart=time_start, timeEnd=time_end, interval=interval)
+        field_data = None
+        input_data = agro_fakers.input_data(model._model, weather_data, field_data)
         return self._ipm.run_model(model._model, input_data)
 
     def create_package(self,dss_name):
@@ -85,22 +89,25 @@ class Manager:
         package_def = dss.as_package()
         module_header = """from openalea.DSS.manager import Manager
                  
-        dss_manager = Manager()
+dss_manager = Manager()
         """
         module_classes = []
         model_class="""
-        def {dss_name}_{model_name}(**kwargs):
-            dss = dss_manager.dss({dss_name})
-            model = dss.get({model_name})
-            input_data = model.input_data(**kwargs)
-            output_data = dss_manager._ipm.run_model(model._model, input_data)
-            return model.output(output_data)
+def {dss_name_}_{model_name}(**kwargs):
+    dss = dss_manager.dss({dss_name})
+    model = dss.get({model_name})
+    input_data = model.input_data(**kwargs)
+    output_data = dss_manager._ipm.run_model(model._model, input_data)
+    return model.output(output_data)
         """
+        dss_name_ = '_'.join(dss_name.split('.'))
         for model_name in dss.models:
-            module_classes.append(model_class.format(dss_name=dss_name, model_name=model_name))
+            module_classes.append(model_class.format(dss_name_=dss_name_,
+                                                     dss_name=dss_name,
+                                                     model_name=model_name))
 
         module = module_header + '\n'.join(module_classes)
-        module_name = dss_name + '.py'
+        module_name = dss_name_ + '.py'
         # open(module_name, 'w') as f:
         #    f.write(module)
 
