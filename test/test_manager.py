@@ -1,8 +1,8 @@
 
 import pandas
-from openalea.dss import Hub, Model
+from openalea.dss import Manager, Model
 
-h= Hub()
+h= Manager()
 
 catalog= h.display()
 
@@ -11,7 +11,7 @@ def test_catalog_display():
     assert len(catalog) > 32
     assert all(k in catalog.columns for k in ['dss', 'models', 'pests', 'crops', 'description'])
 
-def test_get():
-    psi=h.get(dss="no.nibio.vips",model="PSILARTEMP")
+def test_get_model():
+    psi=h.get_model("no.nibio.vips","PSILARTEMP")
     assert isinstance(psi, Model)  
 

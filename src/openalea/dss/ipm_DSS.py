@@ -12,61 +12,17 @@ import numpy as np
 import json
 import xarray as xr
 import matplotlib.pyplot as plt
-from agroservices.ipm.ipm import IPM
 
-class Hub:
-    """Class Hub
-    
-    Hub allows to access IPM catalog and get one model. 
-    """
-    
-    def __init__(self):
-        """[summary]
-        """
-        self._ipm = IPM()
-        self._catalog = self._ipm.get_dss()
-    
-    @property 
-    def catalog(self):
-        """ Trasform ipm catalogue from agroservices request in dict
+class DSS(object):
+    def __init__(self, name, meta, models, manager):
+        self.name = name
+        self.meta = meta
+        self.models=models
+        self._dssm = manager
 
-        Returns
-        -------
-        [dict]
-            [dict of dss catalog with meta-information by dss and model]
-        """
-
-        return {k: v['models'] for k,v in self._catalog.items()}
-    
-    
-    def display(self,view="dataframe"):
-        """Display catalog meta information (dss, model and description)
-
-        Parameters
-        ----------
-        view : str, optional
-            [choose the type of catalog visualisation dataframe or dict], by default "dataframe"
-
-        Returns
-        -------
-        [dataframe or dict]
-            [return a dataframe or a dict]
-        """
-        if view=="dataframe":
-            df=pandas.Series(self.catalog).apply(pandas.Series).stack().apply(pandas.Series)
-            df=df[["pests","crops","description"]]
-            # df=pandas.concat([df.drop("description",axis=1),df['description'].apply(pandas.Series)],axis=1)
-            # df.rename(columns={'other':'description'}, inplace=True)
-            # df=df.drop(['created_by', 'age', 'assumptions', 'peer_review', 'case_studies'],axis=1)
-            df=df.reset_index()
-            df.rename(columns={"level_0":"dss","level_1":"models"},inplace=True)
-            
-            return df
-        
-        else:
-            print(self.catalog)
-    
-    def get(self, dss="no.nibio.vips", model="PSILARTEMP"):
+    def as_package(self):
+        return {k: v.as_node() for k,v in self.models.items()}
+    def get(self,  model="PSILARTEMP"):
         """[Get model]
 
         Parameters
@@ -77,15 +33,10 @@ class Hub:
             [description], by default "PSILARTEMP"
         """
 
-        if (dss in self._catalog and model in self._catalog[dss]['models']):
-            model_meta = self._catalog[dss]['models'][model].copy()
-            model_dss = self._catalog[dss].copy()
-            model_dss.pop('models')
-            return Model(model_meta, model_dss, self._ipm)
+        if model in self.models:
+            return Model(self.models[model], self.name, self._dssm)
         else:
-            raise ValueError('Model ' + model + ' not found in ' + dss)
-        
-
+            raise ValueError('Model ' + model + ' not found in ' + self.name)
 class Model(object):
     """ Model Class derived from Hub. It allows to displays informations and run model and plot output
 
@@ -95,11 +46,11 @@ class Model(object):
         Class allows to access IPM catalog and get one model
     """
     
-    def __init__(self, model, dss, ipm_services):
+    def __init__(self, model, dss, manager):
         """Init of Model class model
 
         Parameters
-        ----------
+        ----------_
         dss : str
             id of the dss
         model : str
@@ -107,8 +58,8 @@ class Model(object):
         """
         self._model = model
         self._dss = dss
-        self._ipm = ipm_services
-        self._parameters = {p['id'] : p for p in self._ipm.get_parameter()}
+        self._dssm = manager
+        self._parameters = {p['id'] : p for p in self._dssm._ipm.get_parameter()}
 
     @property
     def model_id(self):
@@ -223,7 +174,7 @@ class Model(object):
         dict
             dict containing model information 
         """
-        inf=self.model
+        inf=self._model
         
         if display=="dataframe":
             d=dict()
@@ -253,7 +204,7 @@ class Model(object):
             df=df[["name","id",'description',"type_of_decision","pests","crops","weather input","field_observation input","output","output_description"]]
             return df
         else:        
-            return self.model
+            return self._model
     
     def __xarray_convert__(self, output):
         """ Convert model output of the model in xarray dataset 
@@ -384,7 +335,7 @@ class Model(object):
                     field_observation_input["configParameters"].update(json_obs)
                     return field_observation_input
 
-        output= self._ipm.run_model(self.model,
+        output= self._dssm._ipm.run_model(self._model,
                                     input_data= input(weatherdata=weatherdata,fieldObservation=fieldObservation))
         
         if view== "ds":

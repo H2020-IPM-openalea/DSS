@@ -1,4 +1,5 @@
-from .ipm_DSS import Hub, Model
+from .ipm_DSS import Model
+from .manager import Manager
 
 
 

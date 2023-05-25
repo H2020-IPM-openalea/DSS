@@ -2,13 +2,12 @@
 """
 
 
-from setuptools import sic
-from openalea.dss import Hub
+from openalea.dss import Manager
 from weatherdata.ipm import WeatherDataHub
 import xarray as xr
 
-h= Hub()
-psi= h.get(dss="no.nibio.vips",model="PSILARTEMP")
+h= Manager()
+psi= h.get_model("no.nibio.vips", "PSILARTEMP")
 
 
 
@@ -41,5 +40,4 @@ def test_run():
     assert list(ds.dims)==["time"]
     assert keys_exists(ds.attrs,keys=['name', 'id', 'version', 'authors', 'description', 'description_url'])
 
-    return ds
 
