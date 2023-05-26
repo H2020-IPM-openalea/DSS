@@ -14,11 +14,12 @@ src/openalea.dss.egg-info/dependency_links.txt
 src/openalea.dss.egg-info/not-zip-safe
 src/openalea.dss.egg-info/top_level.txt
 src/openalea/dss/__init__.py
+src/openalea/dss/datadir.py
 src/openalea/dss/datamanipulation.py
 src/openalea/dss/ipm_DSS.py
 src/openalea/dss/version.py
 src/openalea/dss_wralea/__init__.py
 src/openalea/dss_wralea/__wralea__.py
+src/openalea/fastapi/__init__.py
 test/test_DSSHub.py
 test/test_DSSdata.py
-test/test_dss.py
