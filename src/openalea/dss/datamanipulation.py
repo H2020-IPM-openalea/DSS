@@ -1,6 +1,18 @@
+import pandas
+import numpy
 """ Short meteorological models """
+def linear_degree_days(varname,data, start_date=None, base_temp=0., max_temp=35.):
+    df = data[varname].copy()
+    if start_date is None:
+        start_date = data.index[0]
+    df[df < base_temp] = 0.
+    df[df > max_temp] = 0.
+    dd = numpy.cumsum((df - base_temp) / 24.)
+    if isinstance(start_date, str):
+        start_date = pandas.to_datetime(start_date, utc=True)
+    return dd - dd[df.index.searchsorted(start_date)]
 
-def temp_par(self, Tair, PAR):
+def canopy_temperature(Tair, PAR):
     """ Return an estimation of air temperature near the leaf
     
     :Parameters:

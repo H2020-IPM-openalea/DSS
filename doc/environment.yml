@@ -1,0 +1,20 @@
+name: DSS
+channels:
+  - conda-forge
+  - openalea3
+
+dependencies:
+  - python=3.8
+  - requests  
+  - appdirs 
+  - bs4 
+  - colorlog 
+  - requests_cache 
+  - xarray 
+  - pandas
+  - pytest
+  - sphinx_rtd_theme
+  - nbsphinx
+  - nbsphinx-link
+  - agroservices
+  - weatherdata
