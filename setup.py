@@ -57,4 +57,6 @@ setup(
 
     # See MANIFEST.in
     include_package_data=True,
+    entry_points = {
+       "wralea": ["dss = openalea.dss_wralea",]},
     )
