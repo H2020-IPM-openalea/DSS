@@ -46,7 +46,7 @@ setup(
     maintainer="",
     maintainer_email="",
 
-    url="",
+    url="https://github.com/H2020-IPM-openalea/DSS",
     license="Cecill-C",
     keywords='openalea, DSS, weather',
 
