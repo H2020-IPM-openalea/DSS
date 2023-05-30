@@ -10,7 +10,7 @@ Welcome to DSS's documentation!
 What is DSS ?
 -------------
 
-DSS is a Python package build on the top of AgroService to facilitate usage of IPM DSS [H2020 IPM-Decision Project](https://www.ipmdecisions.net/)  within python, and transform DSS outputs in a native and efficient Python data structure (pandas.DataFrame) to facilitate its usage in Python and OpenAlea.
+DSS is a Python package build on the top of AgroService to facilitate usage of IPM DSS `H2020 IPM-Decision Project <https://www.ipmdecisions.net/>`_  within python, and transform DSS outputs in a native and efficient Python data structure (pandas.DataFrame) to facilitate its usage in Python and OpenAlea.
 
 Installation
 ------------
