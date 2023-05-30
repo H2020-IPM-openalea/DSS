@@ -34,7 +34,7 @@ conda install -c openalea3 -c conda-forge openalea.dss
 * [weatherdata](https://github.com/H2020-IPM-openalea/weatherdata)
 
 ### Documentation
-readthedoc todo
+[Documentation of the DSS package](https://ipmdss.readthedocs.io)
 
 ### Contributing
 All contributions, bug reports, bug fixes, documentation improvements, enhancements, and ideas are welcome.
