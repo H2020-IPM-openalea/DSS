@@ -2,7 +2,7 @@
 import pandas
 
 from agroservices.ipm.ipm import IPM
-import agroservices.ipm.fakers as agro_fakers
+import agroservices.ipm.fakers as ipm_fakers
 from openalea.dss.ipm_DSS import DSS
 import openalea.dss.fakers as fakers
 
@@ -79,11 +79,24 @@ class Manager:
         interval = model._model['input']['weather_parameters'][0]['interval']
         weather_data = weather_data_source.data(parameters=parameters, timeStart=time_start, timeEnd=time_end, interval=interval)
         field_data = None
-        input_data = agro_fakers.input_data(model._model, weather_data, field_data)
+        input_data = ipm_fakers.input_data(model._model, weather_data, field_data)
         return self._ipm.run_model(model._model, input_data)
 
     def run_as_node(self, model, **kwargs):
-        """run model in """
+        """run model as a node call"""
+        weather_data = None
+        if len(model.inputs['weather_data']) > 0:
+            data = []
+            for p in model.inputs['weather_data']:
+                data.append(kwargs[p])
+            weather_data = ipm_fakers.weather_data(
+                parameters=model.inputs['weather_data'],
+                interval=model._model['input']['weather_parameters'][0]['interval'],
+                data=[data])
+        input_data = ipm_fakers.input_data(model._model, weather_data=weather_data)
+        config_args = {p: kwargs[p] for p in model.inputs['parameters']}
+        input_data['configParameters'].update(config_args)
+        return self._ipm.run_model(model._model, input_data)
 
     def create_package(self,dss_name):
         """Create a visuala package for a dss, together with a python module containing

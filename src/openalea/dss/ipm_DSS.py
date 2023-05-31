@@ -66,23 +66,8 @@ class DSS(object):
         if model_name in self.models:
             model = Model(self.models[model_name], self.name, self._dssm)
 
-            def _model_call(*args, debug=False, **kwargs):
-                weather_data = None
-                if len(model.inputs['weather_data']) > 0:
-                    data = []
-                    for p in model.inputs['weather_data']:
-                        data.append(kwargs[p])
-                    weather_data = ipm_fakers.weather_data(
-                        parameters=model.inputs['weather_data'],
-                        interval=model._model['input']['weather_parameters'][0]['interval'],
-                        data=[data])
-                input_data = ipm_fakers.input_data(model._model, weather_data=weather_data)
-                config_args = {p: kwargs[p] for p in model.inputs['parameters']}
-                input_data['configParameters'].update(config_args)
-                if debug:
-                    return input_data
-                else:
-                    return model._dssm._ipm.run_model(model._model, input_data)
+            def _model_call(*args, **kwargs):
+                return model._dssm.run_as_node(model, **kwargs)
 
             patch_call(model, _model_call, 'test_doc')
             return model
