@@ -12,6 +12,94 @@ catalog = h.catalog
 models = h.models
 pkgs = models.keys()
 
+# Rewrite of pkg.create_user_node
+def my_user_node(pkg, name, category, description,
+                         inputs, outputs, pkg_name=None):
+    
+        """
+        Return a new user node factory
+        This function create a new python module in the package directory
+        The factory is added to the package
+        and the package is saved.
+        """
+
+        if (name in pkg):
+            raise FactoryExistsError()
+
+        localdir = pkg.path
+        classname = name.replace(' ', '_')
+
+        # build function parameters
+        ins = []
+        in_names = []
+        for input in inputs:
+            in_name = input['name'].replace(' ', '_').lower()
+            in_names.append(in_name)
+            in_value = input['value']
+            if in_value is not None:
+                arg = '%s=%s' % (in_name, repr(in_value))
+            else:
+                arg = '%s' % (in_name, )
+            ins.append(arg)
+        in_args = ', '.join(ins)
+
+        # build output
+        out_values = ""
+        return_values = []
+        for output in outputs:
+            arg = output['name'].replace(' ', '_').lower()
+            # if an input arg is equal to an output one,
+            # change its name.
+            while arg in in_names:
+                arg = 'out_' + arg
+            out_values += '%s = None; ' % (arg, )
+            return_values.append('%s' % (arg, ))
+
+        if return_values:
+            return_values = ', '.join(return_values) + ','
+        # Create the module file
+        # We can adapt the template to manage specific IPM execution
+        my_template = u"""\
+def %s(%s):
+    '''\
+    %s
+    '''
+    %s
+    # write the node code here.
+
+    # return outputs
+    return %s
+""" % (classname, in_args, description, out_values, return_values)
+
+        module_path = os.path.join(localdir, "%s.py" % (classname))
+
+        file = open(module_path, 'w')
+        file.write(my_template)
+        file.close()
+
+        from openalea.core.node import NodeFactory
+
+        #pkg_name = pkg.name.replace(' ', '_')
+        #absolute_nodemodule = pkg_name + '.' + classname
+        factory = NodeFactory(name=name,
+                              category=category,
+                              description=description,
+                              inputs=inputs,
+                              outputs=outputs,
+                              nodemodule=classname,
+                              nodeclass=classname,
+                              authors='',
+                              search_path=[localdir])
+
+        pkg.add_factory(factory)
+        #pkg.write()
+
+        return factory
+
+
+
+
+
 def create_pkg(pkg):
 
 
@@ -69,12 +157,12 @@ def create_pkg(pkg):
                 tstart = _inputs['weather_data_period_end']
                 inputs.append(dict(name='timeEnd', interface=IDateTime, value='2022-08-01'))
         try:
-            package1.create_user_node(name=fname,
-                              category=category,
-                              description=description,
-                              inputs=inputs,
-                              outputs=(dict(name='result', interface=IStr),),
-                            )
+            my_user_node(package1, name=fname,
+                         category=category,
+                         description=description,
+                         inputs=inputs,
+                         outputs=(dict(name='result', interface=IStr),),
+                        )
         except:
             print(fname+' failed')
     
