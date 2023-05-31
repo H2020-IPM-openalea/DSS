@@ -3,6 +3,6 @@ def NAERSTADMO(p1=1002, p2=2001, p3=5001, p4=3002, p5=3101, timestart='2022-03-0
     '''
     result = None; 
     # write the node code here.
-
+    
     # return outputs
     return result,

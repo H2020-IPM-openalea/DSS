@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import os
 from openalea.core import UserPackage, Factory, IInt, IDateTime, IStr, ISequence
 from openalea.core.pkgmanager import PackageManager
 
@@ -27,6 +27,7 @@ def my_user_node(pkg, name, category, description,
             raise FactoryExistsError()
 
         localdir = pkg.path
+        print(localdir)
         classname = name.replace(' ', '_')
 
         # build function parameters
@@ -59,6 +60,8 @@ def my_user_node(pkg, name, category, description,
             return_values = ', '.join(return_values) + ','
         # Create the module file
         # We can adapt the template to manage specific IPM execution
+
+        code = ""
         my_template = u"""\
 def %s(%s):
     '''\
@@ -66,10 +69,10 @@ def %s(%s):
     '''
     %s
     # write the node code here.
-
+    %s
     # return outputs
     return %s
-""" % (classname, in_args, description, out_values, return_values)
+""" % (classname, in_args, description, out_values, code, return_values)
 
         module_path = os.path.join(localdir, "%s.py" % (classname))
 
@@ -81,18 +84,21 @@ def %s(%s):
 
         #pkg_name = pkg.name.replace(' ', '_')
         #absolute_nodemodule = pkg_name + '.' + classname
+        local = Path(localdir).name
+        absolute_nodemodule = '.'.join(['openalea.ipmdss_wralea', local, classname]) 
+
         factory = NodeFactory(name=name,
                               category=category,
                               description=description,
                               inputs=inputs,
                               outputs=outputs,
-                              nodemodule=classname,
+                              nodemodule=absolute_nodemodule,
                               nodeclass=classname,
                               authors='',
                               search_path=[localdir])
 
         pkg.add_factory(factory)
-        #pkg.write()
+        pkg.write()
 
         return factory
 
@@ -156,15 +162,15 @@ def create_pkg(pkg):
             if _inputs.get('weather_data_period_end'):
                 tstart = _inputs['weather_data_period_end']
                 inputs.append(dict(name='timeEnd', interface=IDateTime, value='2022-08-01'))
-        try:
-            my_user_node(package1, name=fname,
+        
+        my_user_node(package1, name=fname,
                          category=category,
                          description=description,
                          inputs=inputs,
                          outputs=(dict(name='result', interface=IStr),),
                         )
-        except:
-            print(fname+' failed')
+        #except:
+        #    print(fname+' failed')
     
     try:
         package1.write()

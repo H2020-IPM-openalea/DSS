@@ -3,6 +3,6 @@ def Sin14R_1singleday():
     '''
     result = None; 
     # write the node code here.
-
+    
     # return outputs
     return result,

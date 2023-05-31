@@ -3,6 +3,6 @@ def CPO_TRZAX_PYRNTR(p1=2001, timestart='2022-03-01', timeend='2022-08-01'):
     '''
     result = None; 
     # write the node code here.
-
+    
     # return outputs
     return result,
