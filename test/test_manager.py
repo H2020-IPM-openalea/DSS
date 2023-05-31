@@ -1,6 +1,7 @@
 
 import pandas
 from openalea.dss import Manager, Model
+import openalea.dss.fakers as fakers
 
 
 h= Manager()
@@ -26,4 +27,10 @@ def test_run_model():
     model = h.get_model("no.nibio.vips","PSILARTEMP")
     output = h.run_model(model)
     assert isinstance(output, dict)
+
+def test_run_node():
+    dss = h.dss('no.nibio.vips')
+    model = dss.get('PSILARTEMP')
+    inputs = fakers.node_inputs(model)
+    output = model(**inputs)
 
