@@ -1,5 +1,5 @@
 
-# This file has been generated at Wed May 31 09:12:11 2023
+# This file has been generated at Wed May 31 10:34:52 2023
 
 from openalea.core import *
 
@@ -24,7 +24,7 @@ openalea_ipmdss_wralea_AHDB_OSR_disease_forecasts_SCLESC_SCLESC = Factory(name='
                 category='sclerotinia, oilseed rape',
                 nodemodule='openalea.ipmdss_wralea.AHDB_OSR_disease_forecasts.SCLESC',
                 nodeclass='SCLESC',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -39,7 +39,7 @@ openalea_ipmdss_wralea_AHDB_OSR_disease_forecasts_LEPTMA_LEPTMA = Factory(name='
                 category='Phoma leaf spot, phoma stem canker, Leptosphaeria maculans, oilseed rape',
                 nodemodule='openalea.ipmdss_wralea.AHDB_OSR_disease_forecasts.LEPTMA',
                 nodeclass='LEPTMA',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,

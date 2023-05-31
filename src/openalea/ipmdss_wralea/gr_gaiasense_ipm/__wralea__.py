@@ -1,5 +1,5 @@
 
-# This file has been generated at Wed May 31 09:12:11 2023
+# This file has been generated at Wed May 31 10:34:52 2023
 
 from openalea.core import *
 
@@ -24,7 +24,7 @@ openalea_ipmdss_wralea_gr_gaiasense_ipm_PLASVI_PLASVI = Factory(name='PLASVI',
                 category='none',
                 nodemodule='openalea.ipmdss_wralea.gr_gaiasense_ipm.PLASVI',
                 nodeclass='PLASVI',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,

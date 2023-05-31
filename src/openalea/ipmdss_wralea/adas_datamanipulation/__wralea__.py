@@ -1,5 +1,5 @@
 
-# This file has been generated at Wed May 31 09:12:11 2023
+# This file has been generated at Wed May 31 10:34:52 2023
 
 from openalea.core import *
 
@@ -24,7 +24,7 @@ openalea_ipmdss_wralea_adas_datamanipulation_CIBSEsingleday_CIBSEsingleday = Fac
                 category='algorithm, temperature',
                 nodemodule='openalea.ipmdss_wralea.adas_datamanipulation.CIBSEsingleday',
                 nodeclass='CIBSEsingleday',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -39,7 +39,7 @@ openalea_ipmdss_wralea_adas_datamanipulation_CIBSEmultipledays_CIBSEmultipledays
                 category='algorithm, temperature',
                 nodemodule='openalea.ipmdss_wralea.adas_datamanipulation.CIBSEmultipledays',
                 nodeclass='CIBSEmultipledays',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -54,7 +54,7 @@ openalea_ipmdss_wralea_adas_datamanipulation_Sin14R_1singleday_Sin14R_1singleday
                 category='algorithm, temperature',
                 nodemodule='openalea.ipmdss_wralea.adas_datamanipulation.Sin14R_1singleday',
                 nodeclass='Sin14R_1singleday',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -69,7 +69,7 @@ openalea_ipmdss_wralea_adas_datamanipulation_Sin14R_1multipledays_Sin14R_1multip
                 category='algorithm, temperature',
                 nodemodule='openalea.ipmdss_wralea.adas_datamanipulation.Sin14R_1multipledays',
                 nodeclass='Sin14R_1multipledays',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -84,7 +84,7 @@ openalea_ipmdss_wralea_adas_datamanipulation_Hourly_RH_Hourly_RH = Factory(name=
                 category='algorithm, relative humidity',
                 nodemodule='openalea.ipmdss_wralea.adas_datamanipulation.Hourly_RH',
                 nodeclass='Hourly_RH',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -99,7 +99,7 @@ openalea_ipmdss_wralea_adas_datamanipulation_LeafWetnessDuration_RH_LeafWetnessD
                 category='algorithm',
                 nodemodule='openalea.ipmdss_wralea.adas_datamanipulation.LeafWetnessDuration_RH',
                 nodeclass='LeafWetnessDuration_RH',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -114,7 +114,7 @@ openalea_ipmdss_wralea_adas_datamanipulation_LeafWetnessDuration_LeafWetnessDura
                 category='algorithm',
                 nodemodule='openalea.ipmdss_wralea.adas_datamanipulation.LeafWetnessDuration',
                 nodeclass='LeafWetnessDuration',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,

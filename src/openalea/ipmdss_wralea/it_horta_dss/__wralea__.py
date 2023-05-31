@@ -1,5 +1,5 @@
 
-# This file has been generated at Wed May 31 09:12:11 2023
+# This file has been generated at Wed May 31 10:34:52 2023
 
 from openalea.core import *
 
@@ -24,7 +24,7 @@ openalea_ipmdss_wralea_it_horta_dss_it_horta_dss_tomato_it_horta_dss_tomato = Fa
                 category='',
                 nodemodule='openalea.ipmdss_wralea.it_horta_dss.it_horta_dss_tomato',
                 nodeclass='it_horta_dss_tomato',
-                inputs=[{'name': 'timeStart', 'interface': IDateTime, 'value': '2022-03-01'}, {'name': 'timeEnd', 'interface': IDateTime, 'value': '2022-08-01'}],
+                inputs=[{'name': 'WeatherSource', 'value': None}, {'name': 'timeStart', 'interface': IDateTime, 'value': '2022-03-01'}, {'name': 'timeEnd', 'interface': IDateTime, 'value': '2022-08-01'}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -39,7 +39,7 @@ openalea_ipmdss_wralea_it_horta_dss_it_horta_dss_wheat_it_horta_dss_wheat = Fact
                 category='',
                 nodemodule='openalea.ipmdss_wralea.it_horta_dss.it_horta_dss_wheat',
                 nodeclass='it_horta_dss_wheat',
-                inputs=[{'name': 'timeStart', 'interface': IDateTime, 'value': '2022-03-01'}, {'name': 'timeEnd', 'interface': IDateTime, 'value': '2022-08-01'}],
+                inputs=[{'name': 'WeatherSource', 'value': None}, {'name': 'timeStart', 'interface': IDateTime, 'value': '2022-03-01'}, {'name': 'timeEnd', 'interface': IDateTime, 'value': '2022-08-01'}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,

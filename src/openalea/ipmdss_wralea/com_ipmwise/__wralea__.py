@@ -1,5 +1,5 @@
 
-# This file has been generated at Wed May 31 09:12:11 2023
+# This file has been generated at Wed May 31 10:34:52 2023
 
 from openalea.core import *
 
@@ -24,7 +24,7 @@ openalea_ipmdss_wralea_com_ipmwise_ipmwiseDK_ipmwiseDK = Factory(name='ipmwiseDK
                 category='weeds, herbicides, tank mixtures, dose, recommendation, efficacy, cost, timing, weed density, weed size, weed species, crop growthstage, autumn sown crops, spring sown crops, IPM, IWM, efficacy tables, Field-Specific Crop Management, Integrated weed control, Legislative framework, Crop Protection Online, Dose-response curves',
                 nodemodule='openalea.ipmdss_wralea.com_ipmwise.ipmwiseDK',
                 nodeclass='ipmwiseDK',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -39,7 +39,7 @@ openalea_ipmdss_wralea_com_ipmwise_ipmwiseNO_ipmwiseNO = Factory(name='ipmwiseNO
                 category='weeds, herbicides, tank mixtures, dose, recommendation, efficacy, cost, timing, weed density, weed size, weed species, crop growthstage, autumn sown crops, spring sown crops, IPM, IWM, efficacy tables, Field-Specific Crop Management, Integrated weed control, Legislative framework, Crop Protection Online, Dose-response curves',
                 nodemodule='openalea.ipmdss_wralea.com_ipmwise.ipmwiseNO',
                 nodeclass='ipmwiseNO',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -54,7 +54,7 @@ openalea_ipmdss_wralea_com_ipmwise_ipmwiseES_ipmwiseES = Factory(name='ipmwiseES
                 category='weeds, herbicides, tank mixtures, dose, recommendation, efficacy, cost, timing, weed density, weed size, weed species, crop growthstage, autumn sown crops, spring sown crops, IPM, IWM, efficacy tables, Field-Specific Crop Management, Integrated weed control, Legislative framework, Crop Protection Online, Dose-response curves',
                 nodemodule='openalea.ipmdss_wralea.com_ipmwise.ipmwiseES',
                 nodeclass='ipmwiseES',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -69,7 +69,7 @@ openalea_ipmdss_wralea_com_ipmwise_ipmwiseDEMO_ipmwiseDEMO = Factory(name='ipmwi
                 category='weeds, herbicides, tank mixtures, dose, recommendation, efficacy, cost, timing, weed density, weed size, weed species, crop growthstage, autumn sown crops, spring sown crops, IPM, IWM, efficacy tables, Field-Specific Crop Management, Integrated weed control, Legislative framework, Crop Protection Online, Dose-response curves',
                 nodemodule='openalea.ipmdss_wralea.com_ipmwise.ipmwiseDEMO',
                 nodeclass='ipmwiseDEMO',
-                inputs=[],
+                inputs=[{'name': 'WeatherSource', 'value': None}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,

@@ -1,5 +1,5 @@
 
-# This file has been generated at Wed May 31 09:12:11 2023
+# This file has been generated at Wed May 31 10:34:52 2023
 
 from openalea.core import *
 
@@ -24,7 +24,7 @@ openalea_ipmdss_wralea_dk_au_agro_YellowRustEarlyWarning_YellowRustEarlyWarning 
                 category='Yellow rust',
                 nodemodule='openalea.ipmdss_wralea.dk_au_agro.YellowRustEarlyWarning',
                 nodeclass='YellowRustEarlyWarning',
-                inputs=[{'name': 'timeStart', 'interface': IDateTime, 'value': '2022-03-01'}, {'name': 'timeEnd', 'interface': IDateTime, 'value': '2022-08-01'}],
+                inputs=[{'name': 'WeatherSource', 'value': None}, {'name': 'timeStart', 'interface': IDateTime, 'value': '2022-03-01'}, {'name': 'timeEnd', 'interface': IDateTime, 'value': '2022-08-01'}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -39,7 +39,7 @@ openalea_ipmdss_wralea_dk_au_agro_StemRustGeneticFrequency_StemRustGeneticFreque
                 category='',
                 nodemodule='openalea.ipmdss_wralea.dk_au_agro.StemRustGeneticFrequency',
                 nodeclass='StemRustGeneticFrequency',
-                inputs=[{'name': 'timeStart', 'interface': IDateTime, 'value': '2022-03-01'}, {'name': 'timeEnd', 'interface': IDateTime, 'value': '2022-08-01'}],
+                inputs=[{'name': 'WeatherSource', 'value': None}, {'name': 'timeStart', 'interface': IDateTime, 'value': '2022-03-01'}, {'name': 'timeEnd', 'interface': IDateTime, 'value': '2022-08-01'}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -54,7 +54,7 @@ openalea_ipmdss_wralea_dk_au_agro_LeafRustGeneticGroupFrequency_LeafRustGeneticG
                 category='',
                 nodemodule='openalea.ipmdss_wralea.dk_au_agro.LeafRustGeneticGroupFrequency',
                 nodeclass='LeafRustGeneticGroupFrequency',
-                inputs=[{'name': 'timeStart', 'interface': IDateTime, 'value': '2022-03-01'}, {'name': 'timeEnd', 'interface': IDateTime, 'value': '2022-08-01'}],
+                inputs=[{'name': 'WeatherSource', 'value': None}, {'name': 'timeStart', 'interface': IDateTime, 'value': '2022-03-01'}, {'name': 'timeEnd', 'interface': IDateTime, 'value': '2022-08-01'}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,
@@ -69,7 +69,7 @@ openalea_ipmdss_wralea_dk_au_agro_YellowRustGeneticGroupFrequency_YellowRustGene
                 category='',
                 nodemodule='openalea.ipmdss_wralea.dk_au_agro.YellowRustGeneticGroupFrequency',
                 nodeclass='YellowRustGeneticGroupFrequency',
-                inputs=[{'name': 'timeStart', 'interface': IDateTime, 'value': '2022-03-01'}, {'name': 'timeEnd', 'interface': IDateTime, 'value': '2022-08-01'}],
+                inputs=[{'name': 'WeatherSource', 'value': None}, {'name': 'timeStart', 'interface': IDateTime, 'value': '2022-03-01'}, {'name': 'timeEnd', 'interface': IDateTime, 'value': '2022-08-01'}],
                 outputs=({'name': 'result', 'interface': IStr},),
                 widgetmodule=None,
                 widgetclass=None,

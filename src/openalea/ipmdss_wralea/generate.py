@@ -14,7 +14,7 @@ pkgs = models.keys()
 
 # Rewrite of pkg.create_user_node
 def my_user_node(pkg, name, category, description,
-                         inputs, outputs, pkg_name=None):
+                         inputs, outputs, dss_id, model_id):
     
         """
         Return a new user node factory
@@ -61,18 +61,55 @@ def my_user_node(pkg, name, category, description,
         # Create the module file
         # We can adapt the template to manage specific IPM execution
 
-        code = ""
+        code = """
+    h= Manager()
+    _model= h.get_model("%s", "%s")
+
+    source = weathersource
+    output = h.run_model(_model)
+    ts = output['timeStart']
+    te = output['timeEnd']
+    interval = output['interval']
+    try:
+        parameters = [p1, p2, p3, p4]
+    except:
+        try:
+            parameters = [p1, p2, p3]
+        except:
+            try:
+                parameters = [p1, p2]
+            except:
+                try:
+                    parameters = [p1]
+                except:
+                    parameters =[]
+    
+    loc = output.get('locationResult', [])
+    long = []
+    lat = []
+    alt = []
+    long = [d['longitude'] for d in loc]
+    lat = [d['latitude'] for d in loc]
+    alt = [d['altitude'] for d in loc]
+        
+    weather = source.data(longitude=long, latitude=lat, altitude=alt,
+        timeStart=timeStart, timeEnd=timeEnd,
+         parameters=parameters, 
+         interval=interval, display="json")
+
+    ds= _model.run(weatherdata=weather)
+    return ds,
+    """%(dss_id, model_id)
+        
         my_template = u"""\
+from openalea.dss import Manager
 def %s(%s):
     '''\
     %s
     '''
     %s
-    # write the node code here.
-    %s
-    # return outputs
-    return %s
-""" % (classname, in_args, description, out_values, code, return_values)
+
+""" % (classname, in_args, description,  code)
 
         module_path = os.path.join(localdir, "%s.py" % (classname))
 
@@ -142,6 +179,7 @@ def create_pkg(pkg):
         description = info['description'].encode('utf-8', 'ignore')
         _inputs = info['input']
         inputs = []
+        inputs.append(dict(name="WeatherSource", value=None))
         if _inputs:
             if _inputs.get('weather_parameters'):
                 wp = _inputs.get('weather_parameters')
@@ -168,6 +206,7 @@ def create_pkg(pkg):
                          description=description,
                          inputs=inputs,
                          outputs=(dict(name='result', interface=IStr),),
+                         dss_id=pkg, model_id=mf,
                         )
         #except:
         #    print(fname+' failed')
