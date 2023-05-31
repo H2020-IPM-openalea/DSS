@@ -33,4 +33,4 @@ def test_run_node():
     model = dss.get('PSILARTEMP')
     inputs = fakers.node_inputs(model)
     output = model(**inputs)
-
+    assert isinstance(output, dict)
