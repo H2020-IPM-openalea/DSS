@@ -46,7 +46,7 @@ setup(
     maintainer="",
     maintainer_email="",
 
-    url="",
+    url="https://github.com/H2020-IPM-openalea/DSS",
     license="Cecill-C",
     keywords='openalea, DSS, weather',
 
@@ -57,4 +57,6 @@ setup(
 
     # See MANIFEST.in
     include_package_data=True,
+    entry_points = {
+       "wralea": ["dss = openalea.ipmdss_wralea",]},
     )

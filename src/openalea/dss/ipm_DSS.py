@@ -12,63 +12,46 @@ import numpy as np
 import json
 import xarray as xr
 import matplotlib.pyplot as plt
-from agroservices.ipm.ipm import IPM
 
-class Hub:
-    """Class Hub
-    
-    Hub allows to access IPM catalog and get one model. 
-    """
-    
-    def __init__(self):
-        """[summary]
-        """
-        self.ipm_hub=IPM()
-        self._catalog = None
-    
-    @property 
-    def catalog(self):
-        """ Trasform ipm catalogue from agroservices request in dict
+def patch_call(instance, func, doc):
+    class _(type(instance)):
+        def __call__(self, *arg, **kwarg):
+           return func(*arg, **kwarg)
+    instance.__class__ = _
+    instance.__call__.__func__.__doc__ = doc
 
-        Returns
-        -------
-        [dict]
-            [dict of dss catalog with meta-information by dss and model]
-        """
-        if self._catalog is None:
-            self._catalog = self.ipm_hub.get_dss()
-           
-        return {k: v['models'] for k,v in self._catalog.items()}
-    
-    
-    def display(self,view="dataframe"):
-        """Display catalog meta information (dss, model and description)
+class DSS(object):
+    def __init__(self, name, meta, models, manager):
+        self.name = name
+        self.meta = meta
+        self.models=models
+        self._dssm = manager
 
-        Parameters
-        ----------
-        view : str, optional
-            [choose the type of catalog visualisation dataframe or dict], by default "dataframe"
+    @property
+    def name_(self):
+        return '_'.join(self.name.split('.'))
 
-        Returns
-        -------
-        [dataframe or dict]
-            [return a dataframe or a dict]
-        """
-        if view=="dataframe":
-            df=pandas.Series(self.catalog).apply(pandas.Series).stack().apply(pandas.Series)
-            df=df[["pests","crops","description"]]
-            # df=pandas.concat([df.drop("description",axis=1),df['description'].apply(pandas.Series)],axis=1)
-            # df.rename(columns={'other':'description'}, inplace=True)
-            # df=df.drop(['created_by', 'age', 'assumptions', 'peer_review', 'case_studies'],axis=1)
-            df=df.reset_index()
-            df.rename(columns={"level_0":"dss","level_1":"models"},inplace=True)
-            
-            return df
-        
-        else:
-            print(self.catalog)
-    
-    def get(self, dss="no.nibio.vips", model="PSILARTEMP"):
+    def as_package(self):
+        org = self.meta['organization']
+        institute = ', '.join([org['name'],org['address'], org['postal_code'], org['city'], org['country']])
+
+        metainfo=dict(
+            license='unknown',
+            version=self.meta['version'],
+            authors=', '.join([org['email'], org['url']]),
+            institutes=institute,
+            url=self.meta['url'],
+            description=self.meta['name']
+        )
+
+        package_dict = {k: self.get(k).as_node() for k,v in self.models.items()}
+
+        package = dict(name=self.name_,
+                       metainfo=metainfo,
+                       package_dict=package_dict)
+        return package
+
+    def get(self,  model_name="PSILARTEMP"):
         """[Get model]
 
         Parameters
@@ -78,17 +61,17 @@ class Hub:
         model : str, optional
             [description], by default "PSILARTEMP"
         """
-        
-        
-        d={dss:[model for model in self.catalog[dss]] for dss in self.catalog} # dict with dss:model
-        
-        if (dss in d and model in d[dss]):
-            return Model(dss,model)
-        else:
-            raise NotImplementedError()
-        
 
-class Model(Hub):
+        if model_name in self.models:
+             model = Model(self.models[model_name], self.name, self._dssm)
+
+             def _model_call(*args, **kwargs):
+                 return kwargs
+             patch_call(model, _model_call, 'test_doc')
+             return model
+        else:
+            raise ValueError('Model ' + model_name + ' not found in ' + self.name)
+class Model(object):
     """ Model Class derived from Hub. It allows to displays informations and run model and plot output
 
     Parameters
@@ -97,21 +80,125 @@ class Model(Hub):
         Class allows to access IPM catalog and get one model
     """
     
-    def __init__(self, dss, model):
+    def __init__(self, model, dss, manager):
         """Init of Model class model
 
         Parameters
-        ----------
+        ----------_
         dss : str
             id of the dss
         model : str
             id of the model
         """
-        self.dss=dss
-        self.model=model
-        Hub.__init__(self)
-    
-       
+        self._model = model
+        self.dss = dss
+        self._dssm = manager
+        self._parameters = {p['id'] : p for p in self._dssm._ipm.get_parameter()}
+
+    @property
+    def model_id(self):
+        return self._model['id']
+    @property
+    def model(self):
+        return self._model['name']
+
+    @property
+    def meta(self):
+        return {k: v for k, v in self._model.items() if k not in ['input', 'output', 'execution']}
+
+    @property
+    def inputs(self):
+        inputm = {'parameters': {},
+                 'weather_data': {},
+                 'field_observations': {}}
+
+        _input_schema = self._model['execution']['input_schema'].copy()
+        _input = self._model['input'].copy()
+        for k in ('modelId', 'weatherData', 'fieldObservations'):
+            if k in _input_schema['properties']:
+                _input_schema['properties'].pop(k)
+
+        for p in _input_schema['properties'].values():
+            if isinstance(p, dict):
+                if 'properties' in p:
+                    inputm['parameters'].update(p['properties'])
+                else:
+                    inputm['parameters'].update(p)
+
+        if _input['weather_parameters'] is not None:
+            wp = _input['weather_parameters']
+            parameters = [elt['parameter_code'] for elt in wp]
+            inputm['weather_data'].update({p: self._parameters[p] for p in parameters})
+
+            # filter parameters that are used internaly to query weather data
+            for w in ('weather_data_period_start', 'weather_data_period_end'):
+                items = {item['determined_by']: item['value']
+                            for item in _input[w]}
+                if 'INPUT_SCHEMA_PROPERTY' in items:
+                    fields = items['INPUT_SCHEMA_PROPERTY'].split('.')
+                    if len(fields) > 1:
+                        name = fields[-1]
+                        if name in inputm['parameters']:
+                            inputm['parameters'].pop(name)
+
+        if _input['field_observation'] is not None:
+            for w in ('fieldObservations', 'fieldObservationQuantifications'):
+                if w in inputm['parameters']:
+                    inputm['parameters'].pop(w)
+            observations = next(iter(_input_schema['definitions'].values()))
+            inputm['field_observations'] = observations['properties']
+
+        return inputm
+
+    @property
+    def outputs(self):
+        return [{k:v for k,v in d.items() if k != 'chart_info'} for d in self._model['output']['result_parameters']]
+
+    def as_node(self):
+        """Construct inputs of an Openalea node representing the model"""
+
+        inputs = []
+        for p, v in self.inputs['weather_data'].items():
+            dp = {}
+            dp['name'] = p
+            dp['description'] = v['name']
+            dp['interface'] = 'Ifloat'
+            inputs.append(dp)
+
+        for p, v in self.inputs['field_observations'].items():
+            dp = {}
+            dp['name'] = p
+            dp['description'] = v['title']
+            dp['interface'] = 'I' + v.get('type', 'float')
+            inputs.append(dp)
+
+        for p,v in self.inputs['parameters'].items():
+            dp = {}
+            dp['name'] = p
+            dp['description'] = v.get('title', None)
+            dp['interface'] = v.get('type', None)
+            dp['value'] = v.get('default', None)
+            inputs.append(dp)
+
+        outputs=[]
+        for item in self.outputs:
+            dp={}
+            dp['name'] = item['id']
+            dp['description'] = item['title']
+            outputs.append(dp)
+
+        node = dict(
+            name=self.meta['id'],
+            category='DSS',
+            description=self.meta['name'],
+            inputs=inputs,
+            outputs=outputs,
+            nodemodule='_'.join(self.dss.split('.')) + '.py',
+            nodeclass='_'.join(self.dss.split('.')) + '_' + self.model_id,
+            authors=self.meta['authors']
+        )
+        return node
+
     def informations(self,display=None):
         """ Return information of the model
 
@@ -120,7 +207,7 @@ class Model(Hub):
         dict
             dict containing model information 
         """
-        inf=self.catalog[self.dss][self.model]
+        inf=self._model
         
         if display=="dataframe":
             d=dict()
@@ -150,7 +237,7 @@ class Model(Hub):
             df=df[["name","id",'description',"type_of_decision","pests","crops","weather input","field_observation input","output","output_description"]]
             return df
         else:        
-            return self.catalog[self.dss][self.model]
+            return self._model
     
     def __xarray_convert__(self, output):
         """ Convert model output of the model in xarray dataset 
@@ -205,7 +292,7 @@ class Model(Hub):
         
         return ds
     
-    def run(self,weatherdata=None,fieldObservation=None,view="ds"):
+    def run(self, weatherdata=None, fieldObservation=None,view="ds"):
         """ Run model
 
         Parameters
@@ -280,10 +367,9 @@ class Model(Hub):
                     
                     field_observation_input["configParameters"].update(json_obs)
                     return field_observation_input
-        model = self.ipm_hub.get_model(ModelId=self.model,
-            DSSId=self.dss)
-        output= self.ipm_hub.run_model(model,
-            input_data= input(weatherdata=weatherdata,fieldObservation=fieldObservation))
+
+        output= self._dssm._ipm.run_model(self._model,
+                                    input_data= input(weatherdata=weatherdata,fieldObservation=fieldObservation))
         
         if view== "ds":
             return self.__xarray_convert__(output=output)
@@ -311,14 +397,14 @@ class Model(Hub):
                                pestEPPOCode,
                                cropEPPOCode,
                                convert_name=None):
-        r'''
-        Reader dataframe for field observations.It must contains:
+        """
+        Reader dataframe for field observations.It must contain:
         Date of observation: start Date of experiment, End date experiment and date of Observation
-
+        
         Parameters
         ----------
         path : str, optional
-            field observation datafile path, by default r'C:\Users\mlabadie\Documents\GitHub\dss\example\psilarobs.csv'
+            field observation datafile path,
         longitude : float, optional
             longitude in degree of experimental site, by default 11.025635
         latitude : float, optional
@@ -333,12 +419,12 @@ class Model(Hub):
             pestEPPOCode of the model selected here SEPTAP
         cropEPPOCode: str
             cropEPPOCode of the model selected here APUGD
-
+        
         Returns
         -------
         pandas.Dataframe
             return a dataframe with attribute information need to compute observation file input
-        '''
+        """
         data=pandas.read_csv(path,sep=sep)
         time=pandas.to_datetime(data["time"],dayfirst=dayfirst).tolist()
         data.index=pandas.date_range(start=time[0],end=time[-1],tz=timeZone)    
