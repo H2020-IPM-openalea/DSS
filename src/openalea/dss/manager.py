@@ -82,7 +82,7 @@ class Manager:
         input_data = ipm_fakers.input_data(model._model, weather_data, field_data)
         return self._ipm.run_model(model._model, input_data)
 
-    def run_as_node(self, model, **kwargs):
+    def run_as_node(self, model, debug=False, **kwargs):
         """run model as a node call"""
         weather_data = None
         if len(model.inputs['weather_data']) > 0:
@@ -96,7 +96,11 @@ class Manager:
         input_data = ipm_fakers.input_data(model._model, weather_data=weather_data)
         config_args = {p: kwargs[p] for p in model.inputs['parameters']}
         input_data['configParameters'].update(config_args)
-        return self._ipm.run_model(model._model, input_data)
+        if debug:
+            return input_data
+        else:
+            #TODO: if length(output) is more than one restrict to 1 (weather data should have engt > 1)
+            return self._ipm.run_model(model._model, input_data)
 
     def create_package(self,dss_name):
         """Create a visuala package for a dss, together with a python module containing
