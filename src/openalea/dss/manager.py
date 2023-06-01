@@ -83,7 +83,7 @@ class Manager:
         return self._ipm.run_model(model._model, input_data)
 
     def run_as_node(self, model, debug=False, **kwargs):
-        """run model as a node call"""
+        """run model as a single time step node call"""
         weather_data = None
         if len(model.inputs['weather_data']) > 0:
             data = []
