@@ -1,5 +1,6 @@
 """A module that allow exporting an openalea node/factory as an IPM model"""
 import json
+import inspect
 
 def oa_type(interface):
     """Openalea.core interface, without the I and lowercase"""
@@ -79,21 +80,16 @@ from openalea.dss.dss_factory import encode_input
 
 app = FastAPI()
 
-
-#hack_import_node (to be done with package manager)
 from openalea.core.node import FuncNode
 from openalea.core import IFloat, IInt
-def t_risk(tair, threshold=15):
-    if tair <= threshold:
-        return 0
-    else:
-        return 1
-inputs = (dict(name='tair', interface=IFloat, value=None),
-          dict(name='threshold', interface=IFloat, value=15))
-outputs = (dict(name='Risk', interface=IInt), )
-node = FuncNode(inputs, outputs, t_risk)
-node.name='TRISK'
-# end hack
+
+{model_source}
+
+inputs = {inputs}
+outputs = {outputs}
+node = FuncNode(inputs, outputs, {model_name})
+node.name='{model_id}'
+
 
 input_mapping = {input_mapping}
 
@@ -225,5 +221,11 @@ def dss_factory(node, interval=86400, weather_parameters=None, parameters=None, 
     config_params = ''.join([pydantic_parameter_template.format(name=k, type=pydantic_type[v['type']]) for k,v in config.items()])
     pydantic_model = pydantic_template.format(config_params=config_params)
     input_mapping = "{'weather_parameters': %s, 'config_params': %s}"%(json.dumps(weather_parameters),json.dumps(parameters))
-    dss_service = fastAPI_template.format(pydantic_model=pydantic_model, model_id=model_id, input_mapping=input_mapping)
+    dss_service = fastAPI_template.format(model_source=inspect.getsource(node.func),
+                                          model_name= node.func.__name__,
+                                          pydantic_model=pydantic_model,
+                                          model_id=model_id,
+                                          input_mapping=input_mapping,
+                                          inputs=node.input_desc,
+                                          outputs=node.output_desc)
     return model, dss_service
