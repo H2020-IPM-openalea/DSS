@@ -1,8 +1,40 @@
 """A module that allow exporting an openalea node/factory as an IPM model"""
 import json
 
-pydantic_types = {'string': 'str'}
-json_types = {'float': 'number'}
+def oa_type(interface):
+    """Openalea.core interface, without the I and lowercase"""
+    return str(interface)[1:].lower()
+
+# mapping of openalea types to pydantic (python) types
+def py_type(oa_type):
+    py_types = {'sequence': 'list',
+                'filestr': 'str',
+                'dirstr': 'str',
+                'textstr': 'str',
+                'codestr': 'str',
+                }
+    return py_types.get(oa_type, oa_type)
+
+# mapping of py_types to json schema types
+json_type={'str': 'string',
+              'float': 'number',
+              'int': 'integer',
+              'dict': 'object',
+              'list': 'array',
+               'tuple': 'array',
+              'bool': 'boolean',
+              None: 'null'}
+
+#mappping of json types to pydantic types
+pydantic_type={'string': 'str',
+              'number': 'float',
+              'integer': 'int',
+              'object': 'dict',
+              'array': 'list',
+              'boolean': 'bool',
+              'null': None}
+
+
 
 pydantic_parameter_template="""
     {name}: {type}"""
@@ -120,15 +152,18 @@ def encode_input(node, input_data, input_mapping):
     return list(zip(*[inputs[port['name']] for port in node.input_desc]))
 
 
-def _type(interface):
-    return str(interface)[1:].lower()
 
 def wrap_inputs(node, parameters):
     inputs={}
     node_ports = {port['name']: port for port in node.input_desc}
     for p in parameters:
         port = node_ports[p]
-        inputs[p] = dict(type=_type(port['interface']), default=port['value'])
+        d = dict(default=port['value'])
+        oat = oa_type(port['interface'])
+        if oat == 'datetime':
+            d['format'] = 'date-time'
+        d['type'] = json_type[py_type(oat)]
+        inputs[p] = d
     return inputs
 
 
@@ -186,7 +221,8 @@ def dss_factory(node, interval=86400, weather_parameters=None, parameters=None, 
     model['execution']['input_schema']['required'] = ['modelId', 'configParameters']
     model['output'] = wrap_outputs(node, decision_support=decision_support)
 
-    config_params = ''.join([pydantic_parameter_template.format(name=k, type=pydantic_types.get(v['type'], v['type'])) for k,v in config.items()])
+
+    config_params = ''.join([pydantic_parameter_template.format(name=k, type=pydantic_type[v['type']]) for k,v in config.items()])
     pydantic_model = pydantic_template.format(config_params=config_params)
     input_mapping = "{'weather_parameters': %s, 'config_params': %s}"%(json.dumps(weather_parameters),json.dumps(parameters))
     dss_service = fastAPI_template.format(pydantic_model=pydantic_model, model_id=model_id, input_mapping=input_mapping)
