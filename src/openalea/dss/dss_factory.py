@@ -1,10 +1,52 @@
 """A module that allow exporting an openalea node/factory as an IPM model"""
 import json
 
-fastAPI_template="""from fastapi import FastAPI
+pydantic_types = {'string': 'str'}
+json_types = {'float': 'number'}
+
+pydantic_parameter_template="""
+    {name}: {type}"""
+
+pydantic_template="""from __future__ import annotations
+
+from typing import List
+
+from pydantic import BaseModel
+
+
+class ConfigParameters(BaseModel):{config_params}
+
+
+class LocationWeatherDatum(BaseModel):
+    longitude: float
+    latitude: float
+    altitude: float
+    data: List[List[float]]
+    length: int
+    width: int
+
+
+class WeatherData(BaseModel):
+    timeStart: str
+    timeEnd: str
+    interval: int
+    weatherParameters: List[int]
+    locationWeatherData: List[LocationWeatherDatum]
+
+
+class PydanticModel(BaseModel):
+    modelId: str
+    configParameters: ConfigParameters
+    weatherData: WeatherData
+"""
+
+fastAPI_template="""{pydantic_model}
+
+from fastapi import FastAPI
 from openalea.dss.dss_factory import encode_input
 
 app = FastAPI()
+
 
 #hack_import_node (to be done with package manager)
 from openalea.core.node import FuncNode
@@ -23,18 +65,19 @@ node.name='TRISK'
 
 input_mapping = {input_mapping}
 
-@app.post("/dss/model/{dss_name}/{model_id}/")
-async def model_evaluation(input_data):
+@app.post("/{model_id}/")
+async def model_evaluation(data: PydanticModel):
+    input_data = data.dict()
     inputs = encode_input(node, input_data, input_mapping)
-    return ','.join([str(node(input)) for input in inputs])
+    return [node(input) for input in inputs]
 """
 
 fake_input_data = """{
   "modelId": "TRISK",
   "configParameters": {
-    "threshold": 15,
     "timeStart": "2020-05-01",
-    "timeEnd": "2020-05-03"
+    "timeEnd": "2020-05-03",
+    "threshold": 15
   },
   "weatherData": {
     "timeStart": "2020-04-30T22:00:00Z",
@@ -70,7 +113,7 @@ def encode_input(node, input_data, input_mapping):
     inputs={}
     length = input_data['weatherData']['locationWeatherData'][0]['length']
     for p in input_mapping['config_params']:
-        inputs[p] = [input_data['configParameters'].get(p)] * length
+        inputs[p] = [input_data['configParameters'].get(p,0)] * length
     wdata = dict(zip(input_data['weatherData']['weatherParameters'],zip(*input_data['weatherData']['locationWeatherData'][0]['data'])))
     for p, p_code in input_mapping['weather_parameters'].items():
         inputs[p] = wdata[p_code]
@@ -87,6 +130,7 @@ def wrap_inputs(node, parameters):
         port = node_ports[p]
         inputs[p] = dict(type=_type(port['interface']), default=port['value'])
     return inputs
+
 
 def wrap_outputs(node, decision_support=None):
     if decision_support is None:
@@ -117,7 +161,7 @@ def dss_factory(node, interval=86400, weather_parameters=None, parameters=None, 
     model = template._model.copy()
     model_id = node.name
     model['id'] = model_id
-    model['execution']['endpoint'] = 'http://127.0.0.1:8000/dss/model/{dss_name}/{model_id}/'.format(dss_name=template.dss, model_id=model_id)
+    model['execution']['endpoint'] = f'http://127.0.0.1:8000/{model_id}/'
 
     if weather_parameters is None:
         model['input']['weather_parameters'] = None
@@ -135,12 +179,15 @@ def dss_factory(node, interval=86400, weather_parameters=None, parameters=None, 
     else:
         config = {k:v for k,v in config.items() if k in ('timeStart', 'timeEnd')}
     if parameters is not None:
-        config.update(wrap_inputs(node, parameters))
+        inputs = wrap_inputs(node, parameters)
+        config.update(inputs)
     properties['configParameters']['properties'] = config
     properties['configParameters']['required'] = list(config.keys())
     model['execution']['input_schema']['required'] = ['modelId', 'configParameters']
     model['output'] = wrap_outputs(node, decision_support=decision_support)
 
+    config_params = ''.join([pydantic_parameter_template.format(name=k, type=pydantic_types.get(v['type'], v['type'])) for k,v in config.items()])
+    pydantic_model = pydantic_template.format(config_params=config_params)
     input_mapping = "{'weather_parameters': %s, 'config_params': %s}"%(json.dumps(weather_parameters),json.dumps(parameters))
-    dss_service = fastAPI_template.format(dss_name=template.dss, model_id=model_id, input_mapping=input_mapping)
+    dss_service = fastAPI_template.format(pydantic_model=pydantic_model, model_id=model_id, input_mapping=input_mapping)
     return model, dss_service
