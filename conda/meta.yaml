@@ -22,6 +22,9 @@ requirements:
     - agroservices 
     - weatherdata
     - matplotlib
+    - openalea.core
+    - fastapi
+    - uvicorn
   
 test:
   requires:

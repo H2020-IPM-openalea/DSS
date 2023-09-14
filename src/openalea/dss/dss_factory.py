@@ -1,6 +1,13 @@
 """A module that allow exporting an openalea node/factory as an IPM model"""
 import json
 import inspect
+import subprocess
+import psutil
+import os
+# check that modules required to launch webservice are there
+import fastapi
+import uvicorn
+import openalea.core
 
 def oa_type(interface):
     """Openalea.core interface, without the I and lowercase"""
@@ -100,43 +107,7 @@ async def model_evaluation(data: PydanticModel):
     return [node(input) for input in inputs]
 """
 
-fake_input_data = """{
-  "modelId": "TRISK",
-  "configParameters": {
-    "timeStart": "2020-05-01",
-    "timeEnd": "2020-05-03",
-    "threshold": 15
-  },
-  "weatherData": {
-    "timeStart": "2020-04-30T22:00:00Z",
-    "timeEnd": "2020-05-02T22:00:00Z",
-    "interval": 86400,
-    "weatherParameters": [
-        1002
-    ],
-    "locationWeatherData": [
-        {
-            "longitude": 10.781989,
-            "latitude": 59.660468,
-            "altitude": 94.0,
-            "data": [
-                [
-                    5.7
-                ],
-                [
-                    8.2
-                ],
-                [
-                    8.5
-                ]
-            ],
-            "length": 3,
-            "width": 1
-        }
-    ]
-  }
-}
-"""
+
 def encode_input(node, input_data, input_mapping):
     inputs={}
     length = input_data['weatherData']['locationWeatherData'][0]['length']
@@ -229,3 +200,28 @@ def dss_factory(node, interval=86400, weather_parameters=None, parameters=None, 
                                           inputs=node.input_desc,
                                           outputs=node.output_desc)
     return model, dss_service
+
+
+def start_service(dss_service):
+    """Launch a uvicorn-fastapi webservice"""
+    with open('main.py', 'w') as outfile:
+        outfile.write(dss_service)
+    pro = subprocess.Popen('uvicorn main:app', stdout=subprocess.PIPE,
+                           shell=True)
+    return 'http://127.0.0.1:8000', pro
+
+
+
+def stop_service(proc, including_parent=True):
+    parent = psutil.Process(proc.pid)
+    children = parent.children(recursive=True)
+    for child in children:
+        child.kill()
+    gone, still_alive = psutil.wait_procs(children, timeout=5)
+    if including_parent:
+        try:
+            parent.kill()
+            parent.wait(5)
+        except:
+            pass
+    os.remove('main.py')
