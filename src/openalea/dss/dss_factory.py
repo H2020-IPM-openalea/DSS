@@ -88,7 +88,11 @@ from openalea.dss.dss_factory import encode_input
 app = FastAPI()
 
 from openalea.core.node import FuncNode
-from openalea.core import IFloat, IInt
+from openalea.core import *
+
+if "{exec_path}" is not None:
+    with open("{exec_path}") as f:
+        exec(f.read())
 
 {model_source}
 
@@ -216,7 +220,7 @@ def encode_input(node, input_data, input_mapping):
     wdata = dict(zip(input_data['weatherData']['weatherParameters'],zip(*input_data['weatherData']['locationWeatherData'][0]['data'])))
     for p, p_code in input_mapping['weather_parameters'].items():
         inputs[p] = wdata[p_code]
-    return list(zip(*[inputs[port['name']] for port in node.input_desc]))
+    return list(zip(*[inputs[port['name']] for port in node.input_desc if port['name'] in inputs]))
 
 def wrap_outputs(node, decision_support=None):
     if decision_support is None:
@@ -229,7 +233,7 @@ def wrap_outputs(node, decision_support=None):
     return output
 
 
-def dss_factory(node, interval=86400, weather_parameters=None, parameters=None, decision_support=None, meta=None):
+def dss_factory(model_id, node, factory=None, interval=86400, weather_parameters=None, parameters=None, decision_support=None, meta=None):
     """Transform an openalea node in a IPM model json descriptor and generate a fastAPI script to launch webservice
 
     Args:
@@ -245,7 +249,6 @@ def dss_factory(node, interval=86400, weather_parameters=None, parameters=None, 
 
     """
 
-    model_id = node.name
 
     if meta is None:
         meta = wrap_meta_informations(id=model_id)
@@ -284,7 +287,11 @@ def dss_factory(node, interval=86400, weather_parameters=None, parameters=None, 
     config_params = ''.join([pydantic_parameter_template.format(name=k, type=pydantic_type[v['type']]) for k,v in config.items()])
     pydantic_model = pydantic_template.format(config_params=config_params)
     input_mapping = "{'weather_parameters': %s, 'config_params': %s}"%(json.dumps(weather_parameters),json.dumps(parameters))
-    dss_service = fastAPI_template.format(model_source=inspect.getsource(node.func),
+    exec_path='None'
+    if factory is not None:
+        exec_path = factory.get_node_file().replace('\\','/')
+    dss_service = fastAPI_template.format(exec_path = exec_path,
+                                          model_source=inspect.getsource(node.func),
                                           model_name= node.func.__name__,
                                           pydantic_model=pydantic_model,
                                           model_id=model_id,
