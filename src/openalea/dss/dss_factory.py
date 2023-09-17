@@ -83,14 +83,14 @@ class PydanticModel(BaseModel):
 fastAPI_template="""{pydantic_model}
 
 from fastapi import FastAPI
-from openalea.dss.dss_factory import encode_input
+from openalea.dss.dss_factory import encode_input, encode_output
 
 app = FastAPI()
 
 from openalea.core.node import FuncNode
 from openalea.core import *
 
-if "{exec_path}" is not None:
+if "{exec_path}" != "None":
     with open("{exec_path}") as f:
         exec(f.read())
 
@@ -108,7 +108,12 @@ input_mapping = {input_mapping}
 async def model_evaluation(data: PydanticModel):
     input_data = data.dict()
     inputs = encode_input(node, input_data, input_mapping)
-    return [node(input) for input in inputs]
+    outputs = [node(input) for input in inputs]
+    if len(node.output_desc) == 1:
+        outputs = [list((item,)) for item in outputs]
+    if len(outputs) == 1:
+        outputs = list(zip(*outputs[0]))
+    return encode_output(node, input_data, outputs)
 """
 
 def wrap_meta_informations(id='MODEL',
@@ -242,13 +247,34 @@ def wrap_outputs(node, decision_support=None):
                 result_parameters = [_ipm_port(p) for p in node.output_desc])
     return output
 
+def encode_output(node, input_data,output_data):
+    """Format model outputs to expected IPM output"""
 
-def dss_factory(model_id, node, factory=None, interval=86400, weather_parameters=None, parameters=None, decision_support=None, meta=None):
+    output = {}
+    def _ipm_port(port):
+        return dict(id=port['name'])
+
+    for w in ('timeStart', 'timeEnd', 'interval'):
+        output[w] = input_data['weatherData'][w]
+    output['resultParameters'] = [_ipm_port(p)['id'] for p in node.output_desc]
+    res = {}
+    for w in ('longitude', 'latitude', 'altitude'):
+        res[w] = input_data['weatherData']['locationWeatherData'][0][w]
+    res['data'] = output_data
+    res['length'] = len(output_data)
+    res['width'] = len(output_data[0])
+    output['locationResult'] = [res]
+    return output
+
+
+def dss_factory(model_id, node, factory=None, interval=86400, weather_parameters=None, config_params=None, decision_support=None, meta=None):
     """Transform an openalea node in a IPM model json descriptor and generate a fastAPI script to launch webservice
 
     Args:
         node: the node to be exported
-        factory: the node factory associated to the node (optional)
+        factory
+
+        : the node factory associated to the node (optional)
         interval: the time step of the model (s)
         weather_parameters: a mapping between node input name and weather data codes, if any.
         None if none of the input is a weather data
@@ -276,7 +302,7 @@ def dss_factory(model_id, node, factory=None, interval=86400, weather_parameters
                                               'internal': []})
 
     execution['input_schema'] = wrap_input_schema(model_id, node.input_desc,
-                                                  weather_parameters, parameters)
+                                                  weather_parameters, config_params)
     model['execution'] = execution
 
     input = {'weather_parameters': None,
@@ -295,9 +321,9 @@ def dss_factory(model_id, node, factory=None, interval=86400, weather_parameters
     model['output'] = wrap_outputs(node, decision_support=decision_support)
 
     config = execution['input_schema']['properties']['configParameters']['properties']
-    config_params = ''.join([pydantic_parameter_template.format(name=k, type=pydantic_type[v['type']]) for k,v in config.items()])
-    pydantic_model = pydantic_template.format(config_params=config_params)
-    input_mapping = "{'weather_parameters': %s, 'config_params': %s}"%(json.dumps(weather_parameters),json.dumps(parameters))
+    _config_params = ''.join([pydantic_parameter_template.format(name=k, type=pydantic_type[v['type']]) for k,v in config.items()])
+    pydantic_model = pydantic_template.format(config_params=_config_params)
+    input_mapping = "{'weather_parameters': %s, 'config_params': %s}"%(json.dumps(weather_parameters),json.dumps(config_params))
     exec_path='None'
     if factory is not None:
         exec_path = factory.get_node_file().replace('\\','/')
