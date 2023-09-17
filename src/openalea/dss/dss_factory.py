@@ -4,10 +4,10 @@ import inspect
 import subprocess
 import psutil
 import os
+from openalea.core import ISequence
 # check that modules required to launch webservice are there
 import fastapi
 import uvicorn
-import openalea.core
 
 def oa_type(interface):
     """Openalea.core interface, without the I and lowercase"""
@@ -214,13 +214,23 @@ def wrap_input_schema(model_id, input_desc, weather_parameters, parameters):
 
 def encode_input(node, input_data, input_mapping):
     inputs={}
-    length = input_data['weatherData']['locationWeatherData'][0]['length']
-    for p in input_mapping['config_params']:
-        inputs[p] = [input_data['configParameters'].get(p,0)] * length
-    wdata = dict(zip(input_data['weatherData']['weatherParameters'],zip(*input_data['weatherData']['locationWeatherData'][0]['data'])))
-    for p, p_code in input_mapping['weather_parameters'].items():
-        inputs[p] = wdata[p_code]
-    return list(zip(*[inputs[port['name']] for port in node.input_desc if port['name'] in inputs]))
+    wports = [it['interface'] for it in node.input_desc if it['name'] in input_mapping['weather_parameters']]
+    wdata = dict(zip(input_data['weatherData']['weatherParameters'],
+                     zip(*input_data['weatherData']['locationWeatherData'][0]['data'])))
+
+    if any([interface == ISequence for interface in wports]):
+        for p in input_mapping['config_params']:
+            inputs[p] = input_data['configParameters'].get(p,0)
+        for p, p_code in input_mapping['weather_parameters'].items():
+            inputs[p] = wdata[p_code]
+        return [tuple([inputs[port['name']] for port in node.input_desc if port['name'] in inputs]),]
+    else:
+        length = input_data['weatherData']['locationWeatherData'][0]['length']
+        for p in input_mapping['config_params']:
+            inputs[p] = [input_data['configParameters'].get(p,0)] * length
+        for p, p_code in input_mapping['weather_parameters'].items():
+            inputs[p] = wdata[p_code]
+        return list(zip(*[inputs[port['name']] for port in node.input_desc if port['name'] in inputs]))
 
 def wrap_outputs(node, decision_support=None):
     if decision_support is None:
@@ -238,6 +248,7 @@ def dss_factory(model_id, node, factory=None, interval=86400, weather_parameters
 
     Args:
         node: the node to be exported
+        factory: the node factory associated to the node (optional)
         interval: the time step of the model (s)
         weather_parameters: a mapping between node input name and weather data codes, if any.
         None if none of the input is a weather data
